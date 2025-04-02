@@ -1,4 +1,4 @@
-package pcd.ass01;
+package pcd.ass01.v1fix;
 
 import javax.swing.*;
 import java.awt.*;
@@ -21,7 +21,7 @@ public class BoidsPanel extends JPanel {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        setBackground(Color.WHITE);
+        setBackground(Color.LIGHT_GRAY);
         
         var w = view.getWidth();
         var h = view.getHeight();

@@ -1,8 +1,7 @@
-package pcd.ass01;
+package pcd.ass01.v0;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 public class BoidsModel {
     

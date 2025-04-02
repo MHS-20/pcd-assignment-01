@@ -8,7 +8,7 @@ public class BoidsSimulator {
 
     private final BoidsModel model;
     private Optional<BoidsView> view;
-    private final List<BoidWorker> boidWorkers = new ArrayList<>();
+    private List<Thread> workers = new ArrayList<>();
 
     private static final int FRAMERATE = 50;
     private int framerate;
@@ -16,7 +16,6 @@ public class BoidsSimulator {
     private final int N_WORKERS = CORES + 1;
     private long t0;
 
-    private Monitor managerMonitor = new Monitor();
     private MyCyclicBarrier computeVelocityBarrier;
     private MyCyclicBarrier updateVelocityBarrier;
     private MyCyclicBarrier updatePositionBarrier;
@@ -28,7 +27,7 @@ public class BoidsSimulator {
     }
 
     private void initWorkers() {
-        boidWorkers.clear();
+        workers.clear();
 
         List<List<Boid>> partitions = new ArrayList<>();
         for (int i = 0; i < N_WORKERS; i++) {
@@ -43,7 +42,6 @@ public class BoidsSimulator {
         }
 
         var boids = model.getBoids();
-        managerMonitor = new Monitor();
         computeVelocityBarrier = new MyCyclicBarrier(boids.size());
         updateVelocityBarrier = new MyCyclicBarrier(boids.size());
         updatePositionBarrier = new MyCyclicBarrier(boids.size() + 1);
@@ -51,9 +49,7 @@ public class BoidsSimulator {
 
         boids.forEach(boid -> {
             Thread t = Thread.ofVirtual().unstarted(() -> {
-                while (true) {
-                    try {
-                        managerMonitor.waitUntilWorkStart();
+                while (!Thread.currentThread().isInterrupted()) {
                         boid.calculateVelocity(model);
                         computeVelocityBarrier.await();
                         boid.updateVelocity(model);
@@ -61,27 +57,27 @@ public class BoidsSimulator {
                         boid.updatePosition(model);
                         updatePositionBarrier.await();
                         updateGuiBarrier.await();
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
                 }
             });
-            t.start();
+            workers.add(t);
         });
 
-//        i = 0;
-//        for (List<Boid> partition : partitions) {
-//            boidWorkers.add(new BoidWorker("W" + i,
-//                    partition,
-//                    model,
-//                    managerMonitor,
-//                    computeVelocityBarrier,
-//                    updateVelocityBarrier,
-//                    upddatePositionBarrier
-//            ));
-//            i++;
-//        }
-//        startWorkers();
+        startWorkers();
+    }
+
+    private void startWorkers() {
+        workers.forEach(Thread::start);
+    }
+
+    private void stopWorkers() {
+        workers.forEach(Thread::interrupt);
+//        workers.forEach(t -> {
+//            try {
+//                t.join();
+//            } catch (InterruptedException e) {
+//                Thread.currentThread().interrupt();
+//            }
+//        });
     }
 
     public void attachView(BoidsView view) {
@@ -92,18 +88,15 @@ public class BoidsSimulator {
         while (true) {
             if (view.isPresent()) {
                 if (view.get().isRunning()) {
-                    managerMonitor.startWork();
                     t0 = System.currentTimeMillis();
 
                     updatePositionBarrier.await();
                     view.get().update(framerate);
                     updateFrameRate(t0);
                     updateGuiBarrier.await();
-                } else {
-                    managerMonitor.stopWork();
                 }
                 if (view.get().isResetButtonPressed()) {
-                    managerMonitor.stopWork();
+                    stopWorkers();
                     model.resetBoids(view.get().getNumberOfBoids());
                     view.get().update(framerate);
                     initWorkers();

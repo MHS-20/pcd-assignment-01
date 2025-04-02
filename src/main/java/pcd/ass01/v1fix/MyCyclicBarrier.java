@@ -20,7 +20,8 @@ public class MyCyclicBarrier {
                 try {
                     wait();
                 } catch (InterruptedException e) {
-                    // throw new RuntimeException(e);
+                    Thread.currentThread().interrupt();
+                    return;
                 }
             }
         } else {

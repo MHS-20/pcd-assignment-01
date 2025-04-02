@@ -16,7 +16,6 @@ public class BoidsSimulator {
     private final int N_WORKERS = CORES;
     private long t0;
 
-    private Monitor managerMonitor = new Monitor();
     private MyCyclicBarrier computeVelocityBarrier;
     private MyCyclicBarrier updateVelocityBarrier;
     private MyCyclicBarrier updatePositionBarrier;
@@ -43,19 +42,16 @@ public class BoidsSimulator {
             i++;
         }
 
-        managerMonitor = new Monitor();
         computeVelocityBarrier = new MyCyclicBarrier(N_WORKERS);
         updateVelocityBarrier = new MyCyclicBarrier(N_WORKERS);
         updatePositionBarrier = new MyCyclicBarrier(N_WORKERS + 1);
         updateGuiBarrier = new MyCyclicBarrier(N_WORKERS + 1);
-
 
         i = 0;
         for (List<Boid> partition : partitions) {
             boidWorkers.add(new BoidWorker("W" + i,
                     partition,
                     model,
-                    managerMonitor,
                     computeVelocityBarrier,
                     updateVelocityBarrier,
                     updatePositionBarrier,
@@ -71,6 +67,17 @@ public class BoidsSimulator {
         boidWorkers.forEach(BoidWorker::start);
     }
 
+    private void stopWorkers() {
+        boidWorkers.forEach(BoidWorker::interrupt);
+        boidWorkers.forEach(t -> {
+            try {
+                t.join();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        });
+    }
+
     public void attachView(BoidsView view) {
         this.view = Optional.of(view);
     }
@@ -79,19 +86,15 @@ public class BoidsSimulator {
         while (true) {
             if (view.isPresent()) {
                 if (view.get().isRunning()) {
-                    managerMonitor.startWork();
                     t0 = System.currentTimeMillis();
-
                     updatePositionBarrier.await();
                     view.get().update(framerate);
                     updateFrameRate(t0);
                     updateGuiBarrier.await();
-
-                } else {
-                    managerMonitor.stopWork();
                 }
+
                 if (view.get().isResetButtonPressed()) {
-                    managerMonitor.stopWork();
+                    stopWorkers();
                     model.resetBoids(view.get().getNumberOfBoids());
                     view.get().update(framerate);
                     initWorkers();

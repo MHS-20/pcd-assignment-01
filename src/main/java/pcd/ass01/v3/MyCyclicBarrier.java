@@ -28,6 +28,8 @@ public class MyCyclicBarrier {
                 try {
                     cond.await();
                 } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return;
                 }
             }
         } else {

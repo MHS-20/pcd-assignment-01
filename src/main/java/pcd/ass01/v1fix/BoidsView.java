@@ -118,6 +118,10 @@ public class BoidsView {
         return true;
     }
 
+    public synchronized boolean isRunning() {
+        return this.isRunning;
+    }
+
     private synchronized void play() {
         this.isRunning = true;
     }
@@ -156,10 +160,6 @@ public class BoidsView {
 
     public int getHeight() {
         return height;
-    }
-
-    public synchronized boolean isRunning() {
-        return this.isRunning;
     }
 
     public int getNumberOfBoids() {

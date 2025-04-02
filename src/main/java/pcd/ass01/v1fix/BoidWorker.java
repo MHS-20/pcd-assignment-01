@@ -33,6 +33,7 @@ public class BoidWorker extends Thread {
             updateVelocity();
             updatePosition();
         }
+        System.out.println("Exiting");
     }
 
     private void computeVelocity() {

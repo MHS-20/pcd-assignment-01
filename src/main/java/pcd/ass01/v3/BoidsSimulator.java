@@ -58,6 +58,7 @@ public class BoidsSimulator {
                         updatePositionBarrier.await();
                         updateGuiBarrier.await();
                 }
+                System.out.println("Exiting");
             });
             workers.add(t);
         });
@@ -73,6 +74,7 @@ public class BoidsSimulator {
         workers.forEach(Thread::interrupt);
 //        workers.forEach(t -> {
 //            try {
+//                System.out.println("Waiting for " + t.getName() + " to finish...");
 //                t.join();
 //            } catch (InterruptedException e) {
 //                Thread.currentThread().interrupt();

@@ -17,9 +17,12 @@ Listeners JPF:
 ### Version 2
 Perché se metto while(true) invece di while(loop) non va?
 Se metto una stampa nel while(true) funziona, se la tolgo no.
-Magari è si incrociano i flussi con la GUI?
+Magari è si incrociano i flussi con la GUI? Il Problema è che mancava synch su running della view
 
 ### Version 3
 Sembra più lenta rispetto ai thread fisici. 
 C'è un problema con il tasto reset se lo spammo. 
 Non so se la gestione con Interrupt vada bene.
+
+Alcuni Vthread non sembrano fermarsi, oppure la tua gestione è sbagliata solo che con i thread fisici non emerge perché sono pochi?
+Oppure i vthrea hanno un ciclo di vita diverso?

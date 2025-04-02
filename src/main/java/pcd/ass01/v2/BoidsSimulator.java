@@ -64,9 +64,7 @@ public class BoidsSimulator {
     public void runSimulation() {
         while (true) {
             if (view.isPresent()) {
-                System.out.println(view.get().isRunning());
                 if (view.get().isRunning()) {
-                    //System.out.println("running simulation");
                     t0 = System.currentTimeMillis();
 
                     try {

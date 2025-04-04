@@ -1,4 +1,4 @@
-package pcd.ass01.v3;
+package pcd.ass01.v3fix;
 
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
@@ -24,22 +24,21 @@ public class MyCyclicBarrier {
         this.name = name;
     }
 
-    public void await() {
+    public void await() throws InterruptedException {
         mutex.lock();
 
         var currentGeneration = generation;
         count++;
         if (count != parties) {
-            while (currentGeneration == generation  && !Thread.currentThread().isInterrupted()) {
+            while (currentGeneration == generation) { // && !Thread.currentThread().isInterrupted()
                 try {
                     System.out.println(Thread.currentThread() + " waiting on " + name + " with count " + count + " for generation: " + currentGeneration);
                     cond.await();
                 } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
+                    //Thread.currentThread().interrupt();
                     System.out.println(Thread.currentThread() +  " got interrupted on " + name + " for generation: " + currentGeneration);
-                    // System.out.println("mutex " + mutex.isHeldByCurrentThread());
-                    // mutex.unlock();
                     // return;
+                    throw e;
                 }
             }
         } else {

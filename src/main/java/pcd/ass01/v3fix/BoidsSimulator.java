@@ -1,11 +1,8 @@
-package pcd.ass01.v3;
+package pcd.ass01.v3fix;
 
-import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.BrokenBarrierException;
-import java.util.concurrent.CyclicBarrier;
 
 public class BoidsSimulator {
 
@@ -55,16 +52,19 @@ public class BoidsSimulator {
         boids.forEach(boid -> {
             Thread t = Thread.ofVirtual().unstarted(() -> {
                 while (!Thread.currentThread().isInterrupted()) {
-                // while (true) {
-                    boid.calculateVelocity(model);
-                    computeVelocityBarrier.await();
+                    // while (true) {
+                    try {
+                        boid.calculateVelocity(model);
+                        computeVelocityBarrier.await();
+                        boid.updateVelocity(model);
+                        updateVelocityBarrier.await();
 
-                    boid.updateVelocity(model);
-                    updateVelocityBarrier.await();
-
-                    boid.updatePosition(model);
-                    updatePositionBarrier.await();
-                    updateGuiBarrier.await();
+                        boid.updatePosition(model);
+                        updatePositionBarrier.await();
+                        updateGuiBarrier.await();
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
                     //System.out.println(Thread.currentThread() + " " + Thread.currentThread().isInterrupted());
                 }
                 //System.out.println(Thread.currentThread() + " exiting");
@@ -92,11 +92,11 @@ public class BoidsSimulator {
         this.view = Optional.of(view);
     }
 
-    public void runSimulation() {
+    public void runSimulation() throws InterruptedException {
         while (true) {
             if (view.isPresent()) {
                 if (view.get().isRunning()) {
-                    System.out.println(Thread.currentThread() + " running");
+                    // System.out.println(Thread.currentThread() + " running");
                     t0 = System.currentTimeMillis();
 
                     System.out.println(Thread.currentThread() + " waiting on position");
@@ -107,6 +107,7 @@ public class BoidsSimulator {
 
                     System.out.println(Thread.currentThread() + " waiting on gui");
                     updateGuiBarrier.await();
+
                 }
 
                 if (view.get().isResetButtonPressed()) {

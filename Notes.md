@@ -42,10 +42,7 @@ Quando riceve l'interrupt però, acquisisce il lock prima di gestire l'eccezione
 Alcuni Vthread non sembrano fermarsi, oppure la tua gestione è sbagliata solo che con i thread fisici non emerge perché sono pochi?
 Oppure i vthread hanno un ciclo di vita diverso?
 
-Forse il deadlock è dovuto al fatto che usi interrupt sui thread ma non sul main, se il main è fermo ad aspettare su una barriera non c'è nessuno che lo sveglia quando premi reset. 
-Anche se il disegno lo fa, quindi vuol dire che il main ci arriva. Forse dopo si blocca su una barriera vecchia?
-E' come se aspettassero su barriere diverse e si bloccano, ma le stampe non funzionano, le saltano.
-Ma non ha senso che vada in deadlock se sta facendo solo degli interrupt. 
+Forse si blocca su una barriera vecchia? E' come se aspettassero su barriere diverse e si bloccano, oppure un thread termina prima del dovuto.
 
 E' come se il main saltasse la barrier della posizione ed andasse subito su quella della gui. Anche cambiando la barriera con il +1, ne salta sempre una.
 Ma cosa c'entra i l tasto reset poi? Perché proprio quando premo reset?
@@ -54,6 +51,5 @@ Il problema è che quando fai signalAll, sembra che poi si interrompano in loop,
 Quindi quelli vecchi continuano ad andare avanti sottobanco.
 Se li fai uscire dal loop, vai in deadlock perché forse anche quelli nuovi escono? Oppure perché fai uscire i thread sotto?
 Se li fai uscire e basta poi è come se saltassero la barriera, perché fanno await, vengono interrotti ed esco. 
-Se metti !interrupt nel loop logico escono anche quelli attuali ma non so perché. 
 
 Spurious wakeups non lanciano InterruptedException.

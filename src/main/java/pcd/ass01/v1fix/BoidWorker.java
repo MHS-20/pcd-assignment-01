@@ -6,18 +6,18 @@ public class BoidWorker extends Thread {
 
     private final List<Boid> boidsPartition;
     private final BoidsModel model;
-    private final MyCyclicBarrier computeVelocityBarrier;
-    private final MyCyclicBarrier updateVelocityBarrier;
-    private final MyCyclicBarrier updatePositionBarrier;
-    private final MyCyclicBarrier updateGuiBarrier;
+    private final MyCyclicBarrierLocks computeVelocityBarrier;
+    private final MyCyclicBarrierLocks updateVelocityBarrier;
+    private final MyCyclicBarrierLocks updatePositionBarrier;
+    private final MyCyclicBarrierLocks updateGuiBarrier;
 
     public BoidWorker(String name,
                       List<Boid> boidsPartition,
                       BoidsModel model,
-                      MyCyclicBarrier computeVelocityBarrier,
-                      MyCyclicBarrier updateVelocityBarrier,
-                      MyCyclicBarrier updatePositionBarrier,
-                      MyCyclicBarrier updateGuiBarrier) {
+                      MyCyclicBarrierLocks computeVelocityBarrier,
+                      MyCyclicBarrierLocks updateVelocityBarrier,
+                      MyCyclicBarrierLocks updatePositionBarrier,
+                      MyCyclicBarrierLocks updateGuiBarrier) {
         super(name);
         this.boidsPartition = boidsPartition;
         this.model = model;

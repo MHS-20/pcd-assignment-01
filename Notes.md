@@ -48,4 +48,12 @@ E' come se aspettassero su barriere diverse e si bloccano, ma le stampe non funz
 Ma non ha senso che vada in deadlock se sta facendo solo degli interrupt. 
 
 E' come se il main saltasse la barrier della posizione ed andasse subito su quella della gui. Anche cambiando la barriera con il +1, ne salta sempre una.
-Ma cosa c'entra il tasto reset poi? Perché proprio quando premo reset?
+Ma cosa c'entra i l tasto reset poi? Perché proprio quando premo reset?
+
+Il problema è che quando fai signalAll, sembra che poi si interrompano in loop, anche se fai wait di nuovo. 
+Quindi quelli vecchi continuano ad andare avanti sottobanco.
+Se li fai uscire dal loop, vai in deadlock perché forse anche quelli nuovi escono? Oppure perché fai uscire i thread sotto?
+Se li fai uscire e basta poi è come se saltassero la barriera, perché fanno await, vengono interrotti ed esco. 
+Se metti !interrupt nel loop logico escono anche quelli attuali ma non so perché. 
+
+Spurious wakeups non lanciano InterruptedException.

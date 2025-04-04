@@ -4,6 +4,8 @@ import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
 
 public class BoidsSimulator {
 
@@ -14,14 +16,14 @@ public class BoidsSimulator {
     private static final int FRAMERATE = 50;
     private int framerate;
     private final int CORES = Runtime.getRuntime().availableProcessors();
-    private final int N_WORKERS = CORES + 1;
+    private final int N_WORKERS = CORES;
     private long t0;
     private volatile boolean loop = true;
 
-    private MyCyclicBarrier computeVelocityBarrier;
-    private MyCyclicBarrier updateVelocityBarrier;
-    private MyCyclicBarrier updatePositionBarrier;
-    private MyCyclicBarrier updateGuiBarrier;
+    private volatile MyCyclicBarrier computeVelocityBarrier;
+    private volatile MyCyclicBarrier updateVelocityBarrier;
+    private volatile MyCyclicBarrier updatePositionBarrier;
+    private volatile MyCyclicBarrier updateGuiBarrier;
 
     public BoidsSimulator(BoidsModel model) {
         this.model = model;
@@ -45,23 +47,25 @@ public class BoidsSimulator {
         }
 
         var boids = model.getBoids();
-        computeVelocityBarrier = new MyCyclicBarrier(boids.size(), "velocity1");
-        updateVelocityBarrier = new MyCyclicBarrier(boids.size(), "velocity2");
-        updatePositionBarrier = new MyCyclicBarrier(boids.size() + 1, "position");
-        updateGuiBarrier = new MyCyclicBarrier(boids.size() + 1, "gui");
+        computeVelocityBarrier = new MyCyclicBarrier(boids.size());
+        updateVelocityBarrier = new MyCyclicBarrier(boids.size());
+        updatePositionBarrier = new MyCyclicBarrier(boids.size() + 1);
+        updateGuiBarrier = new MyCyclicBarrier(boids.size() + 1);
 
         boids.forEach(boid -> {
             Thread t = Thread.ofVirtual().unstarted(() -> {
-                // while (!Thread.currentThread().isInterrupted()) {
+                //while (!Thread.currentThread().isInterrupted()) {
                 while (true) {
                     boid.calculateVelocity(model);
                     computeVelocityBarrier.await();
+
                     boid.updateVelocity(model);
                     updateVelocityBarrier.await();
+
                     boid.updatePosition(model);
                     updatePositionBarrier.await();
                     updateGuiBarrier.await();
-                    System.out.println(Thread.currentThread() + " " + Thread.currentThread().isInterrupted());
+                    //System.out.println(Thread.currentThread() + " " + Thread.currentThread().isInterrupted());
                 }
                 //System.out.println(Thread.currentThread() + " exiting");
             });
@@ -92,7 +96,9 @@ public class BoidsSimulator {
         while (true) {
             if (view.isPresent()) {
                 if (view.get().isRunning()) {
+                    System.out.println(Thread.currentThread() + " running");
                     t0 = System.currentTimeMillis();
+
                     System.out.println(Thread.currentThread() + " waiting on position");
                     updatePositionBarrier.await();
 

@@ -82,8 +82,8 @@ public class BoidsSimulator {
                     t0 = System.currentTimeMillis();
                     updatePositionBarrier.await();
                     view.get().update(framerate);
-                    updateFrameRate(t0);
                     updateGuiBarrier.await();
+                    updateFrameRate(t0);
                 }
 
                 if (view.get().isResetButtonPressed()) {

@@ -99,13 +99,13 @@ public class BoidsSimulator {
                     // System.out.println(Thread.currentThread() + " running");
                     t0 = System.currentTimeMillis();
 
-                    System.out.println(Thread.currentThread() + " waiting on position");
+                    //System.out.println(Thread.currentThread() + " waiting on position");
                     updatePositionBarrier.await();
 
                     view.get().update(framerate);
                     updateFrameRate(t0);
 
-                    System.out.println(Thread.currentThread() + " waiting on gui");
+                    //System.out.println(Thread.currentThread() + " waiting on gui");
                     updateGuiBarrier.await();
 
                 }

@@ -1,6 +1,8 @@
 Volatile nei campi del Boid? In tutte le versioni?
 Non so se la gestione con Interrupt vada bene.
 
+Volatile nei campi della CyclicBarrier? Però poi devi fare delle operazioni atomiche.
+
 Misurazioni: 1000 boids, 1000 iterazioni, senza GUI
 0. Execution time: 74986 ms (1 thread)
 1. Execution time: 8592 ms (8 thread)

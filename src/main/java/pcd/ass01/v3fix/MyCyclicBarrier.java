@@ -32,17 +32,17 @@ public class MyCyclicBarrier {
         if (count != parties) {
             while (currentGeneration == generation) { // && !Thread.currentThread().isInterrupted()
                 try {
-                    System.out.println(Thread.currentThread() + " waiting on " + name + " with count " + count + " for generation: " + currentGeneration);
+                    //System.out.println(Thread.currentThread() + " waiting on " + name + " with count " + count + " for generation: " + currentGeneration);
                     cond.await();
                 } catch (InterruptedException e) {
                     //Thread.currentThread().interrupt();
-                    System.out.println(Thread.currentThread() +  " got interrupted on " + name + " for generation: " + currentGeneration);
+                    //System.out.println(Thread.currentThread() +  " got interrupted on " + name + " for generation: " + currentGeneration);
                     // return;
                     throw e;
                 }
             }
         } else {
-            System.out.println(Thread.currentThread() + " " + name + " barrier released for generation: " + currentGeneration + " with count: " + count);
+            //System.out.println(Thread.currentThread() + " " + name + " barrier released for generation: " + currentGeneration + " with count: " + count);
             count = 0;
             generation++;
             cond.signalAll();

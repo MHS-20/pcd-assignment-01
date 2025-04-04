@@ -1,5 +1,6 @@
 package pcd.ass01.v3;
 
+import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -15,11 +16,13 @@ public class BoidsSimulator {
     private final int CORES = Runtime.getRuntime().availableProcessors();
     private final int N_WORKERS = CORES + 1;
     private long t0;
+    private volatile boolean loop = true;
 
     private MyCyclicBarrier computeVelocityBarrier;
     private MyCyclicBarrier updateVelocityBarrier;
     private MyCyclicBarrier updatePositionBarrier;
     private MyCyclicBarrier updateGuiBarrier;
+
     public BoidsSimulator(BoidsModel model) {
         this.model = model;
         view = Optional.empty();
@@ -42,24 +45,27 @@ public class BoidsSimulator {
         }
 
         var boids = model.getBoids();
-        computeVelocityBarrier = new MyCyclicBarrier(boids.size());
-        updateVelocityBarrier = new MyCyclicBarrier(boids.size());
-        updatePositionBarrier = new MyCyclicBarrier(boids.size() + 1);
-        updateGuiBarrier = new MyCyclicBarrier(boids.size() + 1);
+        computeVelocityBarrier = new MyCyclicBarrier(boids.size(), "velocity1");
+        updateVelocityBarrier = new MyCyclicBarrier(boids.size(), "velocity2");
+        updatePositionBarrier = new MyCyclicBarrier(boids.size() + 1, "position");
+        updateGuiBarrier = new MyCyclicBarrier(boids.size() + 1, "gui");
 
         boids.forEach(boid -> {
             Thread t = Thread.ofVirtual().unstarted(() -> {
-                while (!Thread.currentThread().isInterrupted()) {
-                        boid.calculateVelocity(model);
-                        computeVelocityBarrier.await();
-                        boid.updateVelocity(model);
-                        updateVelocityBarrier.await();
-                        boid.updatePosition(model);
-                        updatePositionBarrier.await();
-                        updateGuiBarrier.await();
+                // while (!Thread.currentThread().isInterrupted()) {
+                while (true) {
+                    boid.calculateVelocity(model);
+                    computeVelocityBarrier.await();
+                    boid.updateVelocity(model);
+                    updateVelocityBarrier.await();
+                    boid.updatePosition(model);
+                    updatePositionBarrier.await();
+                    updateGuiBarrier.await();
+                    System.out.println(Thread.currentThread() + " " + Thread.currentThread().isInterrupted());
                 }
-                System.out.println("Exiting");
+                //System.out.println(Thread.currentThread() + " exiting");
             });
+
             workers.add(t);
         });
 
@@ -67,19 +73,15 @@ public class BoidsSimulator {
     }
 
     private void startWorkers() {
+        System.out.println("Starting " + workers.size() + " workers");
+        loop = true;
         workers.forEach(Thread::start);
     }
 
     private void stopWorkers() {
+        System.out.println("Stopping " + workers.size() + " workers");
+        loop = false;
         workers.forEach(Thread::interrupt);
-//        workers.forEach(t -> {
-//            try {
-//                System.out.println("Waiting for " + t.getName() + " to finish...");
-//                t.join();
-//            } catch (InterruptedException e) {
-//                Thread.currentThread().interrupt();
-//            }
-//        });
     }
 
     public void attachView(BoidsView view) {
@@ -91,18 +93,22 @@ public class BoidsSimulator {
             if (view.isPresent()) {
                 if (view.get().isRunning()) {
                     t0 = System.currentTimeMillis();
-
+                    System.out.println(Thread.currentThread() + " waiting on position");
                     updatePositionBarrier.await();
+
                     view.get().update(framerate);
                     updateFrameRate(t0);
+
+                    System.out.println(Thread.currentThread() + " waiting on gui");
                     updateGuiBarrier.await();
                 }
+
                 if (view.get().isResetButtonPressed()) {
                     stopWorkers();
                     model.resetBoids(view.get().getNumberOfBoids());
                     view.get().update(framerate);
-                    initWorkers();
                     view.get().setResetButtonUnpressed();
+                    initWorkers();
                 }
             }
         }

@@ -69,13 +69,6 @@ public class BoidsSimulator {
 
     private void stopWorkers() {
         boidWorkers.forEach(BoidWorker::interrupt);
-        boidWorkers.forEach(t -> {
-            try {
-                t.join();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-        });
     }
 
     public void attachView(BoidsView view) {

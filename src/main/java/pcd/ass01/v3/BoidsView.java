@@ -66,7 +66,7 @@ public class BoidsView {
 
         resetButton = makeButton("Reset");
         resetButton.addActionListener(e -> {
-            this.isResetButtonPressed = true;
+            setResetButtonPressed();
         });
 
 
@@ -166,11 +166,17 @@ public class BoidsView {
         return this.nBoids;
     }
 
-    public boolean isResetButtonPressed() {
+    public synchronized boolean isResetButtonPressed() {
         return isResetButtonPressed;
     }
 
-    public void setResetButtonUnpressed() {
+    public synchronized void setResetButtonUnpressed() {
         this.isResetButtonPressed = false;
     }
+
+    public synchronized void setResetButtonPressed() {
+        this.isResetButtonPressed = true;
+
+    }
+
 }

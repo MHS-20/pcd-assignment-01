@@ -16,7 +16,7 @@ public class MyCyclicBarrier {
         count++;
 
         if (count != parties) {
-            while (currentGeneration == generation) {
+            while (currentGeneration == generation && !Thread.currentThread().isInterrupted()) {
                 try {
                     wait();
                 } catch (InterruptedException e) {

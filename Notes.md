@@ -1,6 +1,13 @@
 Volatile nei campi del Boid? In tutte le versioni?
 Non so se la gestione con Interrupt vada bene.
 
+Misurazioni: 1000 boids, 1000 iterazioni, senza GUI
+0. Execution time: 74986 ms (1 thread)
+1. Execution time: 8592 ms (8 thread)
+2. Execution time: 14101 ms (executor)
+3. Execution time: 15163 ms (virtual thread)
+
+
 ### Version 1
 Usare N thread per spezzare la lista di Boid, ed ognuno si occupa di un sottogruppo.
 Velocity/Position: necessarie due barriere su cui aspettano tutti prima di passare alla fase successiva.

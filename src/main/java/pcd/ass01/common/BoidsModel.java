@@ -34,7 +34,6 @@ public class BoidsModel {
         this.avoidRadius = avoidRadius;
 
         boids = generateBoids(nBoids);
-        //boids = Collections.synchronizedList(generateBoids(nBoids));
     }
 
     private List<Boid> generateBoids(int nBoids) {

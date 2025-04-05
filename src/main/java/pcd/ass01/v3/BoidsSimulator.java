@@ -53,22 +53,15 @@ public class BoidsSimulator implements BoidsController {
         updateGuiBarrier = new MyCyclicBarrier(boids.size() + 1);
 
         boids.forEach(boid -> {
-            Thread t = Thread.ofVirtual().unstarted(() -> {
-                while (!resetFlag.isSet()) {
-                    while (runFlag.isSet()) {
-                        boid.calculateVelocity(model);
-                        computeVelocityBarrier.await();
-
-                        boid.updateVelocity(model);
-                        updateVelocityBarrier.await();
-
-                        boid.updatePosition(model);
-                        updatePositionBarrier.await();
-                        updateGuiBarrier.await();
-                    }
-                }
-            });
-
+            Thread t = Thread.ofVirtual().unstarted(new VirtualBoidWorker(boid,
+                        model,
+                        computeVelocityBarrier,
+                        updateVelocityBarrier,
+                        updatePositionBarrier,
+                        updateGuiBarrier,
+                        runFlag,
+                        resetFlag
+                ));
             workers.add(t);
         });
 

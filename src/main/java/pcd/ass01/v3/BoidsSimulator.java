@@ -47,30 +47,15 @@ public class BoidsSimulator implements BoidsController {
         }
 
         var boids = model.getBoids();
-        computeVelocityBarrier = new MyCyclicBarrier(boids.size(), "velocity1");
-        updateVelocityBarrier = new MyCyclicBarrier(boids.size(), "velocity2");
-        updatePositionBarrier = new MyCyclicBarrier(boids.size() + 1, "position");
-        updateGuiBarrier = new MyCyclicBarrier(boids.size() + 1, "gui");
+        computeVelocityBarrier = new MyCyclicBarrier(boids.size());
+        updateVelocityBarrier = new MyCyclicBarrier(boids.size());
+        updatePositionBarrier = new MyCyclicBarrier(boids.size() + 1);
+        updateGuiBarrier = new MyCyclicBarrier(boids.size() + 1);
 
         boids.forEach(boid -> {
             Thread t = Thread.ofVirtual().unstarted(() -> {
-
-                if (view.isPresent()) {
-                    while (!resetFlag.isSet()) {
-                        while (runFlag.isSet()) {
-                            boid.calculateVelocity(model);
-                            computeVelocityBarrier.await();
-
-                            boid.updateVelocity(model);
-                            updateVelocityBarrier.await();
-
-                            boid.updatePosition(model);
-                            updatePositionBarrier.await();
-                            updateGuiBarrier.await();
-                        }
-                    }
-                }else{ // run without view
-                    while(true){
+                while (!resetFlag.isSet()) {
+                    while (runFlag.isSet()) {
                         boid.calculateVelocity(model);
                         computeVelocityBarrier.await();
 
@@ -103,6 +88,7 @@ public class BoidsSimulator implements BoidsController {
         if (view.isPresent()) {
             runSimulationWithView(view.get());
         } else {
+            runFlag.set();
             runSimulationWithoutView();
         }
     }
@@ -128,6 +114,7 @@ public class BoidsSimulator implements BoidsController {
 
     private void runSimulationWithoutView() {
         while (true) {
+            System.out.println("[" + this + "] " + Thread.currentThread().getName() + " -> Running");
             updatePositionBarrier.await();
             updateGuiBarrier.await();
         }

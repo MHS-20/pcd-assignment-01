@@ -30,7 +30,6 @@ public class BoidsSimulator implements BoidsController {
         view = Optional.empty();
         this.runFlag = runFlag;
         this.resetFlag = resetFlag;
-        initTasks();
     }
 
     private void initTasks() {
@@ -67,29 +66,49 @@ public class BoidsSimulator implements BoidsController {
     }
 
     public void runSimulation() {
+        initTasks();
+        if (view.isPresent()) {
+            runSimulationWithView(view.get());
+        } else {
+            runFlag.set();
+            runSimulationWithoutView();
+        }
+    }
+
+    public void runSimulationWithView(BoidsView view) {
         while (true) {
-            if (view.isPresent()) {
-                if (runFlag.isSet()) {
-                    t0 = System.currentTimeMillis();
-
-                    try {
-                        waitForCompletion(exc.invokeAll(calculateVelocityTaskList));
-                        waitForCompletion(exc.invokeAll(updateVelocityTaskList));
-                        waitForCompletion(exc.invokeAll(updatePositionTaskList));
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
-
-                    view.get().update(framerate, new ArrayList<>(model.getBoids()));
-                    updateFrameRate(t0);
+            if (runFlag.isSet()) {
+                t0 = System.currentTimeMillis();
+                try {
+                    waitForCompletion(exc.invokeAll(calculateVelocityTaskList));
+                    waitForCompletion(exc.invokeAll(updateVelocityTaskList));
+                    waitForCompletion(exc.invokeAll(updatePositionTaskList));
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
                 }
 
-                if (resetFlag.isSet()) {
-                    model.resetBoids(view.get().getNumberOfBoids());
-                    view.get().update(framerate, new ArrayList<>(model.getBoids()));
-                    notifyResetUnpressed();
-                    initTasks();
-                }
+                view.update(framerate, new ArrayList<>(model.getBoids()));
+                updateFrameRate(t0);
+            }
+
+            if (resetFlag.isSet()) {
+                model.resetBoids(view.getNumberOfBoids());
+                view.update(framerate, new ArrayList<>(model.getBoids()));
+                notifyResetUnpressed();
+                initTasks();
+            }
+        }
+    }
+
+    public void runSimulationWithoutView() {
+        while (true) {
+            System.out.println("[" + this + "] " + Thread.currentThread().getName() + " -> Running");
+            try {
+                waitForCompletion(exc.invokeAll(calculateVelocityTaskList));
+                waitForCompletion(exc.invokeAll(updateVelocityTaskList));
+                waitForCompletion(exc.invokeAll(updatePositionTaskList));
+            } catch (Exception e) {
+                throw new RuntimeException(e);
             }
         }
     }

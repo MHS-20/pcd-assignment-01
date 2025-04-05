@@ -83,6 +83,7 @@ public class BoidsSimulator implements BoidsController{
         if (view.isPresent()) {
             runSimulationWithView(view.get());
         } else {
+            runFlag.set();
             runSimulationWithoutView();
         }
     }
@@ -108,6 +109,7 @@ public class BoidsSimulator implements BoidsController{
 
     private void runSimulationWithoutView() {
         while (true) {
+            System.out.println("[" + this + "] " + Thread.currentThread().getName() + " -> Running");
             updatePositionBarrier.await();
             updateGuiBarrier.await();
         }

@@ -41,28 +41,12 @@ public class BoidWorker extends Thread {
     }
 
     public void run() {
-        if (view.isPresent()) {
-            runWithView(view.get());
-        } else {
-            runWithoutView();
-        }
-    }
-
-    private void runWithView(BoidsView view) {
         while (!resetFlag.isSet()) {
             while (runFlag.isSet()) {
                 computeVelocity();
                 updateVelocity();
                 updatePosition();
             }
-        }
-    }
-
-    private void runWithoutView() {
-        while (true) {
-            computeVelocity();
-            updateVelocity();
-            updatePosition();
         }
     }
 

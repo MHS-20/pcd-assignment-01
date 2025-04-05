@@ -3,7 +3,6 @@ package pcd.ass01.v2;
 import java.awt.*;
 
 import pcd.ass01.common.*;
-import pcd.ass01.v1.BoidsSimulator;
 
 public class BoidsSimulation {
 

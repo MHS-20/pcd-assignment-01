@@ -38,7 +38,6 @@ public class BoidsSimulation {
 
 		var controller = new BoidsSimulator(model, runFlag, resetFlag);
 		var view = new BoidsView(model, controller, SCREEN_WIDTH, SCREEN_HEIGHT, N_BOIDS);
-
 		controller.attachView(view);
 		controller.runSimulation();
     }

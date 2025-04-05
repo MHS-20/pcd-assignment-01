@@ -1,5 +1,7 @@
 package pcd.ass01.v2;
 
+import pcd.ass01.common.*;
+
 import java.util.concurrent.Callable;
 
 public class UpdatePositionTask implements Callable<Void> {

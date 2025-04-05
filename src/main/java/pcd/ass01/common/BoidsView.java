@@ -1,8 +1,10 @@
-package pcd.ass01.v3fix;
+package pcd.ass01.common;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.Hashtable;
+import java.util.List;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class BoidsView {
 
@@ -14,15 +16,21 @@ public class BoidsView {
     private JButton playButton;
     private BoidsModel model;
     private int width, height;
-    private boolean isRunning = false;
+    private boolean isRunning;
     private int nBoids;
-    private boolean isResetButtonPressed = false;
+    private boolean isResetButtonPressed;
+    ConcurrentLinkedQueue<List<Boid>> snapshotsQueue;
+
 
     public BoidsView(BoidsModel model, int width, int height, int nBoids) {
         this.model = model;
         this.width = width;
         this.height = height;
         this.nBoids = nBoids;
+
+        this.isRunning = false;
+        this.isResetButtonPressed = false;
+        snapshotsQueue = new ConcurrentLinkedQueue<>();
 
         frame = new JFrame("Boids Simulation");
         frame.setSize(width, height);
@@ -39,6 +47,7 @@ public class BoidsView {
 
         nBoidsTextField = new JTextField(String.valueOf(this.nBoids), 10);
         nBoidsTextField.setForeground(Color.BLACK);
+
         nBoidsTextField.addActionListener(l -> {
             nBoidsTextField.setForeground(Color.WHITE);
             String text = nBoidsTextField.getText();
@@ -52,21 +61,24 @@ public class BoidsView {
             }
         });
 
+        resetButton = makeButton("Reset");
+        resetButton.addActionListener(e -> {
+            setResetButtonPressed();
+        });
+
+
         playButton = makeButton("Resume");
         playButton.addActionListener(e -> {
             if (isRunning) {
                 pause();
                 playButton.setText("Resume");
+                resetButton.setEnabled(true);
             } else {
                 play();
                 playButton.setText("Suspend");
                 nBoidsTextField.setForeground(Color.BLACK);
+                resetButton.setEnabled(false);
             }
-        });
-
-        resetButton = makeButton("Reset");
-        resetButton.addActionListener(e -> {
-            setResetButtonPressed();
         });
 
 
@@ -100,9 +112,7 @@ public class BoidsView {
         slidersPanel.add(cohesionSlider);
 
         cp.add(BorderLayout.SOUTH, slidersPanel);
-
         frame.setContentPane(cp);
-
         frame.setVisible(true);
     }
 
@@ -122,12 +132,24 @@ public class BoidsView {
         return this.isRunning;
     }
 
-    private synchronized void play() {
+    public synchronized void play() {
         this.isRunning = true;
     }
 
-    private synchronized void pause() {
+    public synchronized void pause() {
         this.isRunning = false;
+    }
+
+    public synchronized boolean isResetButtonPressed() {
+        return isResetButtonPressed;
+    }
+
+    public synchronized void setResetButtonUnpressed() {
+        this.isResetButtonPressed = false;
+    }
+
+    public synchronized void setResetButtonPressed() {
+        this.isResetButtonPressed = true;
     }
 
     private JButton makeButton(String text) {
@@ -140,7 +162,7 @@ public class BoidsView {
         slider.setMinorTickSpacing(1);
         slider.setPaintTicks(true);
         slider.setPaintLabels(true);
-        Hashtable labelTable = new Hashtable<>();
+        Hashtable<Integer, JLabel> labelTable = new Hashtable<>();
         labelTable.put(0, new JLabel("0"));
         labelTable.put(10, new JLabel("1"));
         labelTable.put(20, new JLabel("2"));
@@ -149,9 +171,16 @@ public class BoidsView {
         return slider;
     }
 
-    public void update(int frameRate) {
-        boidsPanel.setFrameRate(frameRate);
-        boidsPanel.repaint();
+    public void update(int frameRate, List<Boid> snapshot) {
+        snapshotsQueue.offer(snapshot);
+        SwingUtilities.invokeLater(() -> {
+            List<Boid> next = snapshotsQueue.poll();
+            if (next != null) {
+                boidsPanel.setFrameRate(frameRate);
+                boidsPanel.setBoids(next);
+                boidsPanel.repaint();
+            }
+        });
     }
 
     public int getWidth() {
@@ -165,18 +194,4 @@ public class BoidsView {
     public int getNumberOfBoids() {
         return this.nBoids;
     }
-
-    public synchronized boolean isResetButtonPressed() {
-        return isResetButtonPressed;
-    }
-
-    public synchronized void setResetButtonUnpressed() {
-        this.isResetButtonPressed = false;
-    }
-
-    public synchronized void setResetButtonPressed() {
-        this.isResetButtonPressed = true;
-
-    }
-
 }

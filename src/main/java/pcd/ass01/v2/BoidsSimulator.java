@@ -1,5 +1,7 @@
 package pcd.ass01.v2;
 
+import pcd.ass01.common.*;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -75,13 +77,13 @@ public class BoidsSimulator {
                         throw new RuntimeException(e);
                     }
 
-                    view.get().update(framerate);
+                    view.get().update(framerate, new ArrayList<>(model.getBoids()));
                     updateFrameRate(t0);
                 }
 
                 if (view.get().isResetButtonPressed()) {
                     model.resetBoids(view.get().getNumberOfBoids());
-                    view.get().update(framerate);
+                    view.get().update(framerate, new ArrayList<>(model.getBoids()));
                     view.get().setResetButtonUnpressed();
                     initTasks();
                 }

@@ -2,6 +2,8 @@ package pcd.ass01.v2;
 
 import java.awt.*;
 
+import pcd.ass01.common.*;
+
 public class BoidsSimulation {
 
 	final static int N_BOIDS = 1000;

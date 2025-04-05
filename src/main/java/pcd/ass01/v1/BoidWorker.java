@@ -1,4 +1,9 @@
-package pcd.ass01.v1fix;
+package pcd.ass01.v1;
+
+import pcd.ass01.common.Boid;
+import pcd.ass01.common.BoidsModel;
+import pcd.ass01.common.BoidsView;
+import pcd.ass01.common.MyCyclicBarrier;
 
 import java.util.List;
 import java.util.Optional;
@@ -8,19 +13,19 @@ public class BoidWorker extends Thread {
     private final List<Boid> boidsPartition;
     private final BoidsModel model;
     private final Optional<BoidsView> view;
-    private final MyCyclicBarrierLocks computeVelocityBarrier;
-    private final MyCyclicBarrierLocks updateVelocityBarrier;
-    private final MyCyclicBarrierLocks updatePositionBarrier;
-    private final MyCyclicBarrierLocks updateGuiBarrier;
+    private final MyCyclicBarrier computeVelocityBarrier;
+    private final MyCyclicBarrier updateVelocityBarrier;
+    private final MyCyclicBarrier updatePositionBarrier;
+    private final MyCyclicBarrier updateGuiBarrier;
 
     public BoidWorker(String name,
                       List<Boid> boidsPartition,
                       BoidsModel model,
                       Optional<BoidsView> view,
-                      MyCyclicBarrierLocks computeVelocityBarrier,
-                      MyCyclicBarrierLocks updateVelocityBarrier,
-                      MyCyclicBarrierLocks updatePositionBarrier,
-                      MyCyclicBarrierLocks updateGuiBarrier) {
+                      MyCyclicBarrier computeVelocityBarrier,
+                      MyCyclicBarrier updateVelocityBarrier,
+                      MyCyclicBarrier updatePositionBarrier,
+                      MyCyclicBarrier updateGuiBarrier) {
         super(name);
         this.boidsPartition = boidsPartition;
         this.model = model;

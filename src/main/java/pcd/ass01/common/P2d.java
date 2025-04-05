@@ -1,4 +1,4 @@
-package pcd.ass01.v3;
+package pcd.ass01.common;
 
 /**
  *

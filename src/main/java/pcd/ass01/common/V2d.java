@@ -7,7 +7,7 @@
  * Use is subject to license terms.
  *
  */
-package pcd.ass01.v1fix;
+package pcd.ass01.common;
 
 /**
  *

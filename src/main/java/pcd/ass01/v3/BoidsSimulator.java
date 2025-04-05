@@ -1,11 +1,13 @@
 package pcd.ass01.v3;
 
-import javax.swing.*;
+import pcd.ass01.common.Boid;
+import pcd.ass01.common.BoidsModel;
+import pcd.ass01.common.BoidsView;
+import pcd.ass01.common.MyCyclicBarrier;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.BrokenBarrierException;
-import java.util.concurrent.CyclicBarrier;
 
 public class BoidsSimulator {
 

@@ -1,5 +1,8 @@
 package pcd.ass01.v3;
 
+import pcd.ass01.common.BoidsModel;
+import pcd.ass01.common.BoidsView;
+
 import java.awt.*;
 
 public class BoidsSimulation {

@@ -1,9 +1,9 @@
-package pcd.ass01.v1fix;
+package pcd.ass01.common;
 
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class MyCyclicBarrierLocks {
+public class MyCyclicBarrier {
     private int generation;
     private final int parties;
     private int count;
@@ -11,7 +11,7 @@ public class MyCyclicBarrierLocks {
     private Condition cond;
     private String name;
 
-    public MyCyclicBarrierLocks(int parties) {
+    public MyCyclicBarrier(int parties) {
         this.parties = parties;
         this.generation = 0;
         this.count = 0;
@@ -19,7 +19,7 @@ public class MyCyclicBarrierLocks {
         this.cond = mutex.newCondition();
     }
 
-    public MyCyclicBarrierLocks(int parties, String name) {
+    public MyCyclicBarrier(int parties, String name) {
         this(parties);
         this.name = name;
         this.mutex = new ReentrantLock() {

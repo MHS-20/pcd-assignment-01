@@ -1,4 +1,7 @@
-package pcd.ass01.v3fix;
+package pcd.ass01.v1;
+
+import pcd.ass01.common.BoidsModel;
+import pcd.ass01.common.BoidsView;
 
 import java.awt.*;
 
@@ -20,7 +23,7 @@ public class BoidsSimulation {
 	final static int SCREEN_WIDTH = 1400;
 	final static int SCREEN_HEIGHT = 600;
 
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) {      
     	var model = new BoidsModel(
     					N_BOIDS, 
     					SEPARATION_WEIGHT, ALIGNMENT_WEIGHT, COHESION_WEIGHT, 

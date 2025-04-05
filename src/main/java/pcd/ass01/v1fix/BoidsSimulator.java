@@ -24,7 +24,7 @@ public class BoidsSimulator {
     public BoidsSimulator(BoidsModel model) {
         this.model = model;
         view = Optional.empty();
-        initWorkers();
+        //initWorkers();
     }
 
     private void initWorkers() {
@@ -52,6 +52,7 @@ public class BoidsSimulator {
             boidWorkers.add(new BoidWorker("W" + i,
                     partition,
                     model,
+                    view,
                     computeVelocityBarrier,
                     updateVelocityBarrier,
                     updatePositionBarrier,
@@ -76,24 +77,37 @@ public class BoidsSimulator {
     }
 
     public void runSimulation() {
-        while (true) {
-            if (view.isPresent()) {
-                if (view.get().isRunning()) {
-                    t0 = System.currentTimeMillis();
-                    updatePositionBarrier.await();
-                    view.get().update(framerate);
-                    updateGuiBarrier.await();
-                    updateFrameRate(t0);
-                }
+        initWorkers();
+        if (view.isPresent()) {
+            runSimulationWithView(view.get());
+        } else {
+            runSimulationWithoutView();
+        }
+    }
 
-                if (view.get().isResetButtonPressed()) {
-                    stopWorkers();
-                    model.resetBoids(view.get().getNumberOfBoids());
-                    view.get().update(framerate);
-                    initWorkers();
-                    view.get().setResetButtonUnpressed();
-                }
+    private void runSimulationWithView(BoidsView view) {
+        while (true) {
+            if (view.isRunning()) {
+                t0 = System.currentTimeMillis();
+                updatePositionBarrier.await();
+                view.update(framerate, new ArrayList<>(model.getBoids()));
+                updateGuiBarrier.await();
+                updateFrameRate(t0);
             }
+
+            if (view.isResetButtonPressed()) {
+                model.resetBoids(view.getNumberOfBoids());
+                view.update(framerate, new ArrayList<>(model.getBoids()));
+                view.setResetButtonUnpressed();
+                initWorkers();
+            }
+        }
+    }
+
+    private void runSimulationWithoutView() {
+        while (true) {
+            updatePositionBarrier.await();
+            updateGuiBarrier.await();
         }
     }
 
@@ -103,6 +117,7 @@ public class BoidsSimulator {
         var frameratePeriod = 1000 / FRAMERATE;
         if (dtElapsed < frameratePeriod) {
             try {
+                //System.out.println("Sleeping for " + (frameratePeriod - dtElapsed));
                 Thread.sleep(frameratePeriod - dtElapsed);
             } catch (Exception ex) {
                 System.out.println(ex);

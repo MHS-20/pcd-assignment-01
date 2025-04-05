@@ -1,11 +1,13 @@
 package pcd.ass01.v1fix;
 
 import java.util.List;
+import java.util.Optional;
 
 public class BoidWorker extends Thread {
 
     private final List<Boid> boidsPartition;
     private final BoidsModel model;
+    private final Optional<BoidsView> view;
     private final MyCyclicBarrierLocks computeVelocityBarrier;
     private final MyCyclicBarrierLocks updateVelocityBarrier;
     private final MyCyclicBarrierLocks updatePositionBarrier;
@@ -14,6 +16,7 @@ public class BoidWorker extends Thread {
     public BoidWorker(String name,
                       List<Boid> boidsPartition,
                       BoidsModel model,
+                      Optional<BoidsView> view,
                       MyCyclicBarrierLocks computeVelocityBarrier,
                       MyCyclicBarrierLocks updateVelocityBarrier,
                       MyCyclicBarrierLocks updatePositionBarrier,
@@ -21,6 +24,7 @@ public class BoidWorker extends Thread {
         super(name);
         this.boidsPartition = boidsPartition;
         this.model = model;
+        this.view = view;
         this.computeVelocityBarrier = computeVelocityBarrier;
         this.updateVelocityBarrier = updateVelocityBarrier;
         this.updatePositionBarrier = updatePositionBarrier;
@@ -28,7 +32,25 @@ public class BoidWorker extends Thread {
     }
 
     public void run() {
-        while (!Thread.currentThread().isInterrupted()) {
+        if (view.isPresent()) {
+            runWithView(view.get());
+        } else {
+            runWithoutView();
+        }
+    }
+
+    private void runWithView(BoidsView view) {
+        while (!view.isResetButtonPressed()) {
+            while (view.isRunning()) {
+                computeVelocity();
+                updateVelocity();
+                updatePosition();
+            }
+        }
+    }
+
+    private void runWithoutView() {
+        while (true) {
             computeVelocity();
             updateVelocity();
             updatePosition();

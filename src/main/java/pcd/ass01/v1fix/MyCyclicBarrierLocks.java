@@ -34,20 +34,20 @@ public class MyCyclicBarrierLocks {
         var currentGeneration = generation;
         count++;
         if (count != parties) {
-            while (currentGeneration == generation && !Thread.currentThread().isInterrupted() ) { //
+            while (currentGeneration == generation) { //&& !Thread.currentThread().isInterrupted()
                 try {
                     // System.out.println(Thread.currentThread() + " waiting on " + name + " with count " + count + " for generation: " + currentGeneration);
                     cond.await();
                 } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
+                    //Thread.currentThread().interrupt();
                     //System.out.println("mutex " + mutex.isHeldByCurrentThread());
-                    mutex.unlock();
-                    System.out.println(Thread.currentThread() +  " got interrupted on " + name + " for generation: " + currentGeneration);
-                    return;
+                    //mutex.unlock();
+                    //System.out.println(Thread.currentThread() +  " got interrupted on " + name + " for generation: " + currentGeneration);
+                    //return;
                 }
             }
         } else {
-            System.out.println(Thread.currentThread() + " " + name + " barrier released for generation: " + currentGeneration + " with count: " + count);
+            //System.out.println(Thread.currentThread() + " " + name + " barrier released for generation: " + currentGeneration + " with count: " + count);
             count = 0;
             generation++;
             cond.signalAll();

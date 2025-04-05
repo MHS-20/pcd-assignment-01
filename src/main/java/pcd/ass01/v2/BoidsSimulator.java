@@ -82,8 +82,8 @@ public class BoidsSimulator {
                 if (view.get().isResetButtonPressed()) {
                     model.resetBoids(view.get().getNumberOfBoids());
                     view.get().update(framerate);
-                    initTasks();
                     view.get().setResetButtonUnpressed();
+                    initTasks();
                 }
             }
         }

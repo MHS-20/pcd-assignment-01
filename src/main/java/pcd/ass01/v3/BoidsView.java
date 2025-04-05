@@ -1,8 +1,12 @@
 package pcd.ass01.v3;
 
+import pcd.ass01.v3.Boid;
+
 import javax.swing.*;
 import java.awt.*;
 import java.util.Hashtable;
+import java.util.List;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class BoidsView {
 
@@ -14,15 +18,19 @@ public class BoidsView {
     private JButton playButton;
     private BoidsModel model;
     private int width, height;
-    private boolean isRunning = false;
+    private boolean isRunning;
     private int nBoids;
-    private boolean isResetButtonPressed = false;
+    private boolean isResetButtonPressed;
+    ConcurrentLinkedQueue<List<Boid>> snapshotsQueue;
 
     public BoidsView(BoidsModel model, int width, int height, int nBoids) {
         this.model = model;
         this.width = width;
         this.height = height;
         this.nBoids = nBoids;
+        this.isRunning = false;
+        this.isResetButtonPressed = false;
+        snapshotsQueue = new ConcurrentLinkedQueue<>();
 
         frame = new JFrame("Boids Simulation");
         frame.setSize(width, height);
@@ -52,22 +60,26 @@ public class BoidsView {
             }
         });
 
+        resetButton = makeButton("Reset");
+        resetButton.addActionListener(e -> {
+            setResetButtonPressed();
+        });
+
         playButton = makeButton("Resume");
         playButton.addActionListener(e -> {
             if (isRunning) {
                 pause();
                 playButton.setText("Resume");
+                resetButton.setEnabled(true);
             } else {
                 play();
                 playButton.setText("Suspend");
                 nBoidsTextField.setForeground(Color.BLACK);
+                resetButton.setEnabled(false);
             }
         });
 
-        resetButton = makeButton("Reset");
-        resetButton.addActionListener(e -> {
-            setResetButtonPressed();
-        });
+
 
 
         separationSlider = makeSlider();
@@ -130,6 +142,19 @@ public class BoidsView {
         this.isRunning = false;
     }
 
+    public synchronized boolean isResetButtonPressed() {
+        return isResetButtonPressed;
+    }
+
+    public synchronized void setResetButtonUnpressed() {
+        this.isResetButtonPressed = false;
+    }
+
+    public synchronized void setResetButtonPressed() {
+        this.isResetButtonPressed = true;
+
+    }
+
     private JButton makeButton(String text) {
         return new JButton(text);
     }
@@ -149,9 +174,16 @@ public class BoidsView {
         return slider;
     }
 
-    public void update(int frameRate) {
-        boidsPanel.setFrameRate(frameRate);
-        boidsPanel.repaint();
+    public void update(int frameRate, List<Boid> snapshot) {
+        snapshotsQueue.offer(snapshot);
+        SwingUtilities.invokeLater(() -> {
+            List<Boid> next = snapshotsQueue.poll();
+            if (next != null) {
+                boidsPanel.setFrameRate(frameRate);
+                boidsPanel.setBoids(next);
+                boidsPanel.repaint();
+            }
+        });
     }
 
     public int getWidth() {
@@ -166,17 +198,6 @@ public class BoidsView {
         return this.nBoids;
     }
 
-    public synchronized boolean isResetButtonPressed() {
-        return isResetButtonPressed;
-    }
 
-    public synchronized void setResetButtonUnpressed() {
-        this.isResetButtonPressed = false;
-    }
-
-    public synchronized void setResetButtonPressed() {
-        this.isResetButtonPressed = true;
-
-    }
 
 }

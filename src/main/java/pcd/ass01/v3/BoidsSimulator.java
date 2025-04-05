@@ -28,7 +28,6 @@ public class BoidsSimulator {
     public BoidsSimulator(BoidsModel model) {
         this.model = model;
         view = Optional.empty();
-        initWorkers();
     }
 
     private void initWorkers() {
@@ -54,20 +53,34 @@ public class BoidsSimulator {
 
         boids.forEach(boid -> {
             Thread t = Thread.ofVirtual().unstarted(() -> {
-                while (!Thread.currentThread().isInterrupted()) {
-                // while (true) {
-                    boid.calculateVelocity(model);
-                    computeVelocityBarrier.await();
 
-                    boid.updateVelocity(model);
-                    updateVelocityBarrier.await();
+                if (view.isPresent()) {
+                    while (!view.get().isResetButtonPressed()) {
+                        while (view.get().isRunning()) {
+                            boid.calculateVelocity(model);
+                            computeVelocityBarrier.await();
 
-                    boid.updatePosition(model);
-                    updatePositionBarrier.await();
-                    updateGuiBarrier.await();
-                    //System.out.println(Thread.currentThread() + " " + Thread.currentThread().isInterrupted());
+                            boid.updateVelocity(model);
+                            updateVelocityBarrier.await();
+
+                            boid.updatePosition(model);
+                            updatePositionBarrier.await();
+                            updateGuiBarrier.await();
+                        }
+                    }
+                }else{ // run without view
+                    while(true){
+                        boid.calculateVelocity(model);
+                        computeVelocityBarrier.await();
+
+                        boid.updateVelocity(model);
+                        updateVelocityBarrier.await();
+
+                        boid.updatePosition(model);
+                        updatePositionBarrier.await();
+                        updateGuiBarrier.await();
+                    }
                 }
-                //System.out.println(Thread.currentThread() + " exiting");
             });
 
             workers.add(t);
@@ -93,30 +106,37 @@ public class BoidsSimulator {
     }
 
     public void runSimulation() {
+        initWorkers();
+        if (view.isPresent()) {
+            runSimulationWithView(view.get());
+        } else {
+            runSimulationWithoutView();
+        }
+    }
+
+    private void runSimulationWithView(BoidsView view) {
         while (true) {
-            if (view.isPresent()) {
-                if (view.get().isRunning()) {
-                    System.out.println(Thread.currentThread() + " running");
-                    t0 = System.currentTimeMillis();
-
-                    System.out.println(Thread.currentThread() + " waiting on position");
-                    updatePositionBarrier.await();
-
-                    view.get().update(framerate);
-                    updateFrameRate(t0);
-
-                    System.out.println(Thread.currentThread() + " waiting on gui");
-                    updateGuiBarrier.await();
-                }
-
-                if (view.get().isResetButtonPressed()) {
-                    stopWorkers();
-                    model.resetBoids(view.get().getNumberOfBoids());
-                    view.get().update(framerate);
-                    view.get().setResetButtonUnpressed();
-                    initWorkers();
-                }
+            if (view.isRunning()) {
+                t0 = System.currentTimeMillis();
+                updatePositionBarrier.await();
+                view.update(framerate, new ArrayList<>(model.getBoids()));
+                updateGuiBarrier.await();
+                updateFrameRate(t0);
             }
+
+            if (view.isResetButtonPressed()) {
+                model.resetBoids(view.getNumberOfBoids());
+                view.update(framerate, new ArrayList<>(model.getBoids()));
+                view.setResetButtonUnpressed();
+                initWorkers();
+            }
+        }
+    }
+
+    private void runSimulationWithoutView() {
+        while (true) {
+            updatePositionBarrier.await();
+            updateGuiBarrier.await();
         }
     }
 

@@ -2,6 +2,7 @@ package pcd.ass01.common;
 
 import javax.swing.*;
 import java.awt.*;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -19,15 +20,13 @@ public class BoidsView {
     private int nBoids;
     private BoidsController controller;
     //private ConcurrentLinkedQueue<List<Boid>> snapshotsQueue;
-    private FIFOqueue<List<Boid>> snapshotsQueue;
+    //private FIFOqueue<List<Boid>> snapshotsQueue;
 
     public BoidsView(BoidsModel model, BoidsController sim, int width, int height, int nBoids) {
         this.width = width;
         this.height = height;
         this.nBoids = nBoids;
-
         this.controller = sim;
-        snapshotsQueue = new MyFIFOqueue<>();
 
         frame = new JFrame("Boids Simulation");
         frame.setSize(width, height);
@@ -61,7 +60,6 @@ public class BoidsView {
         resetButton = makeButton("Reset");
         resetButton.addActionListener(e -> {
             setResetButtonPressed();
-            // snapshotsQueue.clear();
         });
 
 
@@ -114,17 +112,16 @@ public class BoidsView {
         frame.setVisible(true);
     }
 
-    public void update(int frameRate, List<Boid> snapshot) {
-        snapshotsQueue.put(snapshot);
-
-        SwingUtilities.invokeLater(() -> {
-            List<Boid> next = snapshotsQueue.get();
-            if (next != null) {
+    public void update(int frameRate, List<Boid> boids) {
+        try {
+            SwingUtilities.invokeAndWait(() -> {
                 boidsPanel.setFrameRate(frameRate);
-                boidsPanel.setBoids(next);
+                boidsPanel.setBoids(boids);
                 boidsPanel.repaint();
-            }
-        });
+            });
+        } catch (InterruptedException | InvocationTargetException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 //    public boolean isRunning() {

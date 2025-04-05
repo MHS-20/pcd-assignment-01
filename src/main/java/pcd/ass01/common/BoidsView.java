@@ -18,7 +18,8 @@ public class BoidsView {
 
     private int nBoids;
     private BoidsController controller;
-    private ConcurrentLinkedQueue<List<Boid>> snapshotsQueue;
+    //private ConcurrentLinkedQueue<List<Boid>> snapshotsQueue;
+    private FIFOqueue<List<Boid>> snapshotsQueue;
 
     public BoidsView(BoidsModel model, BoidsController sim, int width, int height, int nBoids) {
         this.width = width;
@@ -26,7 +27,7 @@ public class BoidsView {
         this.nBoids = nBoids;
 
         this.controller = sim;
-        snapshotsQueue = new ConcurrentLinkedQueue<>();
+        snapshotsQueue = new MyFIFOqueue<>();
 
         frame = new JFrame("Boids Simulation");
         frame.setSize(width, height);
@@ -60,6 +61,7 @@ public class BoidsView {
         resetButton = makeButton("Reset");
         resetButton.addActionListener(e -> {
             setResetButtonPressed();
+            // snapshotsQueue.clear();
         });
 
 
@@ -113,10 +115,10 @@ public class BoidsView {
     }
 
     public void update(int frameRate, List<Boid> snapshot) {
-        snapshotsQueue.offer(snapshot);
+        snapshotsQueue.put(snapshot);
 
         SwingUtilities.invokeLater(() -> {
-            List<Boid> next = snapshotsQueue.poll();
+            List<Boid> next = snapshotsQueue.get();
             if (next != null) {
                 boidsPanel.setFrameRate(frameRate);
                 boidsPanel.setBoids(next);
@@ -124,8 +126,6 @@ public class BoidsView {
             }
         });
     }
-
-
 
 //    public boolean isRunning() {
 //        return this.isRunning;

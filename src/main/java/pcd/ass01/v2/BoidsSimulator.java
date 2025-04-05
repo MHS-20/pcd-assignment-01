@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.*;
 
-public class BoidsSimulator {
+public class BoidsSimulator implements BoidsController {
 
     private final BoidsModel model;
     private Optional<BoidsView> view;
@@ -87,11 +87,27 @@ public class BoidsSimulator {
                 if (resetFlag.isSet()) {
                     model.resetBoids(view.get().getNumberOfBoids());
                     view.get().update(framerate, new ArrayList<>(model.getBoids()));
-                    resetFlag.reset();
+                    notifyResetUnpressed();
                     initTasks();
                 }
             }
         }
+    }
+
+    public void notifyStart() {
+        runFlag.set();
+    }
+
+    public void notifyStop() {
+        runFlag.reset();
+    }
+
+    public void notifyResetPressed() {
+        resetFlag.set();
+    }
+
+    public void notifyResetUnpressed() {
+        resetFlag.reset();
     }
 
     private void updateFrameRate(long t0) {

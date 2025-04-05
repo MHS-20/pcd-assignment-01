@@ -14,26 +14,18 @@ public class BoidsView {
     private JSlider cohesionSlider, separationSlider, alignmentSlider;
     private JTextField nBoidsTextField;
     private JButton playButton;
-    private BoidsModel model;
     private int width, height;
 
-    //private boolean isRunning;
     private int nBoids;
-    //private boolean isResetButtonPressed;
-    private Flag runFlag, resetFlag;
-    ConcurrentLinkedQueue<List<Boid>> snapshotsQueue;
+    private BoidsController controller;
+    private ConcurrentLinkedQueue<List<Boid>> snapshotsQueue;
 
-    public BoidsView(BoidsModel model, Flag runFlag, Flag resetFlag, int width, int height, int nBoids) {
-        this.model = model;
+    public BoidsView(BoidsModel model, BoidsController sim, int width, int height, int nBoids) {
         this.width = width;
         this.height = height;
         this.nBoids = nBoids;
 
-        this.runFlag = runFlag;
-        this.resetFlag = resetFlag;
-
-//        this.isRunning = false;
-//        this.isResetButtonPressed = false;
+        this.controller = sim;
         snapshotsQueue = new ConcurrentLinkedQueue<>();
 
         frame = new JFrame("Boids Simulation");
@@ -73,12 +65,12 @@ public class BoidsView {
 
         playButton = makeButton("Resume");
         playButton.addActionListener(e -> {
-            if (runFlag.isSet()) {
-                pause();
+            if (playButton.getText().equals("Suspend")) {
+                stop();
                 playButton.setText("Resume");
                 resetButton.setEnabled(true);
             } else {
-                play();
+                start();
                 playButton.setText("Suspend");
                 nBoidsTextField.setForeground(Color.BLACK);
                 resetButton.setEnabled(false);
@@ -120,45 +112,52 @@ public class BoidsView {
         frame.setVisible(true);
     }
 
-    private boolean isNumeric(String text) {
-        if (text == null) {
-            return false;
-        }
-        try {
-            double d = Double.parseDouble(text);
-        } catch (NumberFormatException nfe) {
-            return false;
-        }
-        return true;
+    public void update(int frameRate, List<Boid> snapshot) {
+        snapshotsQueue.offer(snapshot);
+
+        SwingUtilities.invokeLater(() -> {
+            List<Boid> next = snapshotsQueue.poll();
+            if (next != null) {
+                boidsPanel.setFrameRate(frameRate);
+                boidsPanel.setBoids(next);
+                boidsPanel.repaint();
+            }
+        });
     }
+
+
 
 //    public boolean isRunning() {
 //        return this.isRunning;
 //    }
 
-    public void play() {
-        runFlag.set();
+    public void start() {
+        //runFlag.set();
         //this.isRunning = true;
+        controller.notifyStart();
     }
 
-    public void pause() {
+    public void stop() {
         //this.isRunning = false;
-        runFlag.reset();
+        //runFlag.reset();
+        controller.notifyStop();
     }
 
 //    public boolean isResetButtonPressed() {
 //        return isResetButtonPressed;
 //    }
 
-    public void setResetButtonUnpressed() {
-        //this.isResetButtonPressed = false;
-        resetFlag.reset();
-    }
-
     public void setResetButtonPressed() {
         //this.isResetButtonPressed = true;
-        resetFlag.set();
+        //resetFlag.set();
+        controller.notifyResetPressed();
     }
+
+//    public void setResetButtonUnpressed() {
+//        //this.isResetButtonPressed = false;
+//        //resetFlag.reset();
+//        controller.notifyUnReset();
+//    }
 
     private JButton makeButton(String text) {
         return new JButton(text);
@@ -179,16 +178,16 @@ public class BoidsView {
         return slider;
     }
 
-    public void update(int frameRate, List<Boid> snapshot) {
-        snapshotsQueue.offer(snapshot);
-        SwingUtilities.invokeLater(() -> {
-            List<Boid> next = snapshotsQueue.poll();
-            if (next != null) {
-                boidsPanel.setFrameRate(frameRate);
-                boidsPanel.setBoids(next);
-                boidsPanel.repaint();
-            }
-        });
+    private boolean isNumeric(String text) {
+        if (text == null) {
+            return false;
+        }
+        try {
+            double d = Double.parseDouble(text);
+        } catch (NumberFormatException nfe) {
+            return false;
+        }
+        return true;
     }
 
     public int getWidth() {

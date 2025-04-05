@@ -36,10 +36,10 @@ public class BoidsSimulation {
 		Flag runFlag = new Flag();
 		Flag resetFlag = new Flag();
 
-		var sim = new pcd.ass01.v1.BoidsSimulator(model, runFlag, resetFlag);
-		var view = new BoidsView(model, runFlag, resetFlag, SCREEN_WIDTH, SCREEN_HEIGHT, N_BOIDS);
+		var controller = new BoidsSimulator(model, runFlag, resetFlag);
+		var view = new BoidsView(model, controller, SCREEN_WIDTH, SCREEN_HEIGHT, N_BOIDS);
 
-    	sim.attachView(view);
-    	sim.runSimulation();
+		controller.attachView(view);
+		controller.runSimulation();
     }
 }

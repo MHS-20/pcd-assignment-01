@@ -1,9 +1,6 @@
 package pcd.ass01.v3;
 
-import pcd.ass01.common.Boid;
-import pcd.ass01.common.BoidsModel;
-import pcd.ass01.common.BoidsView;
-import pcd.ass01.common.MyCyclicBarrier;
+import pcd.ass01.common.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,16 +17,18 @@ public class BoidsSimulator {
     private final int CORES = Runtime.getRuntime().availableProcessors();
     private final int N_WORKERS = CORES;
     private long t0;
-    private volatile boolean loop = true;
+    private Flag runFlag, resetFlag;
 
     private volatile MyCyclicBarrier computeVelocityBarrier;
     private volatile MyCyclicBarrier updateVelocityBarrier;
     private volatile MyCyclicBarrier updatePositionBarrier;
     private volatile MyCyclicBarrier updateGuiBarrier;
 
-    public BoidsSimulator(BoidsModel model) {
+    public BoidsSimulator(BoidsModel model, Flag runFlag, Flag resetFlag) {
         this.model = model;
         view = Optional.empty();
+        this.runFlag = runFlag;
+        this.resetFlag = resetFlag;
     }
 
     private void initWorkers() {
@@ -57,8 +56,8 @@ public class BoidsSimulator {
             Thread t = Thread.ofVirtual().unstarted(() -> {
 
                 if (view.isPresent()) {
-                    while (!view.get().isResetButtonPressed()) {
-                        while (view.get().isRunning()) {
+                    while (!resetFlag.isSet()) {
+                        while (runFlag.isSet()) {
                             boid.calculateVelocity(model);
                             computeVelocityBarrier.await();
 
@@ -93,14 +92,7 @@ public class BoidsSimulator {
 
     private void startWorkers() {
         System.out.println("Starting " + workers.size() + " workers");
-        loop = true;
         workers.forEach(Thread::start);
-    }
-
-    private void stopWorkers() {
-        System.out.println("Stopping " + workers.size() + " workers");
-        loop = false;
-        workers.forEach(Thread::interrupt);
     }
 
     public void attachView(BoidsView view) {
@@ -118,7 +110,7 @@ public class BoidsSimulator {
 
     private void runSimulationWithView(BoidsView view) {
         while (true) {
-            if (view.isRunning()) {
+            if (runFlag.isSet()) {
                 t0 = System.currentTimeMillis();
                 updatePositionBarrier.await();
                 view.update(framerate, new ArrayList<>(model.getBoids()));
@@ -126,10 +118,10 @@ public class BoidsSimulator {
                 updateFrameRate(t0);
             }
 
-            if (view.isResetButtonPressed()) {
+            if (resetFlag.isSet()) {
                 model.resetBoids(view.getNumberOfBoids());
                 view.update(framerate, new ArrayList<>(model.getBoids()));
-                view.setResetButtonUnpressed();
+                resetFlag.reset();
                 initWorkers();
             }
         }

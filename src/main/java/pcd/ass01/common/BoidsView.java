@@ -16,20 +16,24 @@ public class BoidsView {
     private JButton playButton;
     private BoidsModel model;
     private int width, height;
-    private boolean isRunning;
+
+    //private boolean isRunning;
     private int nBoids;
-    private boolean isResetButtonPressed;
+    //private boolean isResetButtonPressed;
+    private Flag runFlag, resetFlag;
     ConcurrentLinkedQueue<List<Boid>> snapshotsQueue;
 
-
-    public BoidsView(BoidsModel model, int width, int height, int nBoids) {
+    public BoidsView(BoidsModel model, Flag runFlag, Flag resetFlag, int width, int height, int nBoids) {
         this.model = model;
         this.width = width;
         this.height = height;
         this.nBoids = nBoids;
 
-        this.isRunning = false;
-        this.isResetButtonPressed = false;
+        this.runFlag = runFlag;
+        this.resetFlag = resetFlag;
+
+//        this.isRunning = false;
+//        this.isResetButtonPressed = false;
         snapshotsQueue = new ConcurrentLinkedQueue<>();
 
         frame = new JFrame("Boids Simulation");
@@ -69,7 +73,7 @@ public class BoidsView {
 
         playButton = makeButton("Resume");
         playButton.addActionListener(e -> {
-            if (isRunning) {
+            if (runFlag.isSet()) {
                 pause();
                 playButton.setText("Resume");
                 resetButton.setEnabled(true);
@@ -128,28 +132,32 @@ public class BoidsView {
         return true;
     }
 
-    public synchronized boolean isRunning() {
-        return this.isRunning;
+//    public boolean isRunning() {
+//        return this.isRunning;
+//    }
+
+    public void play() {
+        runFlag.set();
+        //this.isRunning = true;
     }
 
-    public synchronized void play() {
-        this.isRunning = true;
+    public void pause() {
+        //this.isRunning = false;
+        runFlag.reset();
     }
 
-    public synchronized void pause() {
-        this.isRunning = false;
+//    public boolean isResetButtonPressed() {
+//        return isResetButtonPressed;
+//    }
+
+    public void setResetButtonUnpressed() {
+        //this.isResetButtonPressed = false;
+        resetFlag.reset();
     }
 
-    public synchronized boolean isResetButtonPressed() {
-        return isResetButtonPressed;
-    }
-
-    public synchronized void setResetButtonUnpressed() {
-        this.isResetButtonPressed = false;
-    }
-
-    public synchronized void setResetButtonPressed() {
-        this.isResetButtonPressed = true;
+    public void setResetButtonPressed() {
+        //this.isResetButtonPressed = true;
+        resetFlag.set();
     }
 
     private JButton makeButton(String text) {

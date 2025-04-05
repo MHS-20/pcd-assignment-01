@@ -1,9 +1,6 @@
 package pcd.ass01.v1;
 
-import pcd.ass01.common.Boid;
-import pcd.ass01.common.BoidsModel;
-import pcd.ass01.common.BoidsView;
-import pcd.ass01.common.MyCyclicBarrier;
+import pcd.ass01.common.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,15 +18,17 @@ public class BoidsSimulator {
     private final int N_WORKERS = CORES;
     private long t0;
 
+    private Flag runFlag, resetFlag;
     private MyCyclicBarrier computeVelocityBarrier;
     private MyCyclicBarrier updateVelocityBarrier;
     private MyCyclicBarrier updatePositionBarrier;
     private MyCyclicBarrier updateGuiBarrier;
 
-    public BoidsSimulator(BoidsModel model) {
+    public BoidsSimulator(BoidsModel model, Flag runFlag, Flag resetFlag) {
         this.model = model;
         view = Optional.empty();
-        //initWorkers();
+        this.runFlag = runFlag;
+        this.resetFlag = resetFlag;
     }
 
     private void initWorkers() {
@@ -58,6 +57,8 @@ public class BoidsSimulator {
                     partition,
                     model,
                     view,
+                    runFlag,
+                    resetFlag,
                     computeVelocityBarrier,
                     updateVelocityBarrier,
                     updatePositionBarrier,
@@ -88,7 +89,7 @@ public class BoidsSimulator {
 
     private void runSimulationWithView(BoidsView view) {
         while (true) {
-            if (view.isRunning()) {
+            if (runFlag.isSet()) {
                 t0 = System.currentTimeMillis();
                 updatePositionBarrier.await();
                 view.update(framerate, new ArrayList<>(model.getBoids()));
@@ -96,10 +97,11 @@ public class BoidsSimulator {
                 updateFrameRate(t0);
             }
 
-            if (view.isResetButtonPressed()) {
+            if (resetFlag.isSet()) {
                 model.resetBoids(view.getNumberOfBoids());
                 view.update(framerate, new ArrayList<>(model.getBoids()));
-                view.setResetButtonUnpressed();
+                //view.setResetButtonUnpressed();
+                resetFlag.reset();
                 initWorkers();
             }
         }

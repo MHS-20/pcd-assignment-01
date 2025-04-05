@@ -1,9 +1,6 @@
 package pcd.ass01.v1;
 
-import pcd.ass01.common.Boid;
-import pcd.ass01.common.BoidsModel;
-import pcd.ass01.common.BoidsView;
-import pcd.ass01.common.MyCyclicBarrier;
+import pcd.ass01.common.*;
 
 import java.util.List;
 import java.util.Optional;
@@ -13,15 +10,20 @@ public class BoidWorker extends Thread {
     private final List<Boid> boidsPartition;
     private final BoidsModel model;
     private final Optional<BoidsView> view;
+
     private final MyCyclicBarrier computeVelocityBarrier;
     private final MyCyclicBarrier updateVelocityBarrier;
     private final MyCyclicBarrier updatePositionBarrier;
     private final MyCyclicBarrier updateGuiBarrier;
 
+    private Flag runFlag, resetFlag;
+
+
     public BoidWorker(String name,
                       List<Boid> boidsPartition,
                       BoidsModel model,
                       Optional<BoidsView> view,
+                      Flag runFlag, Flag resetFlag,
                       MyCyclicBarrier computeVelocityBarrier,
                       MyCyclicBarrier updateVelocityBarrier,
                       MyCyclicBarrier updatePositionBarrier,
@@ -30,6 +32,8 @@ public class BoidWorker extends Thread {
         this.boidsPartition = boidsPartition;
         this.model = model;
         this.view = view;
+        this.runFlag = runFlag;
+        this.resetFlag = resetFlag;
         this.computeVelocityBarrier = computeVelocityBarrier;
         this.updateVelocityBarrier = updateVelocityBarrier;
         this.updatePositionBarrier = updatePositionBarrier;
@@ -45,8 +49,8 @@ public class BoidWorker extends Thread {
     }
 
     private void runWithView(BoidsView view) {
-        while (!view.isResetButtonPressed()) {
-            while (view.isRunning()) {
+        while (!resetFlag.isSet()) {
+            while (runFlag.isSet()) {
                 computeVelocity();
                 updateVelocity();
                 updatePosition();

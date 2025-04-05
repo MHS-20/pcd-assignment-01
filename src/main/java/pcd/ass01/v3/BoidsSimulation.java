@@ -2,6 +2,7 @@ package pcd.ass01.v3;
 
 import pcd.ass01.common.BoidsModel;
 import pcd.ass01.common.BoidsView;
+import pcd.ass01.common.Flag;
 
 import java.awt.*;
 
@@ -30,9 +31,14 @@ public class BoidsSimulation {
     					ENVIRONMENT_WIDTH, ENVIRONMENT_HEIGHT,
     					MAX_SPEED,
     					PERCEPTION_RADIUS,
-    					AVOID_RADIUS); 
-    	var sim = new BoidsSimulator(model);
-    	var view = new BoidsView(model, SCREEN_WIDTH, SCREEN_HEIGHT, N_BOIDS);
+    					AVOID_RADIUS);
+
+		Flag runFlag = new Flag();
+		Flag resetFlag = new Flag();
+
+		var sim = new pcd.ass01.v1.BoidsSimulator(model, runFlag, resetFlag);
+		var view = new BoidsView(model, runFlag, resetFlag, SCREEN_WIDTH, SCREEN_HEIGHT, N_BOIDS);
+
     	sim.attachView(view);
     	sim.runSimulation();
     }

@@ -21,12 +21,15 @@ public class BoidsSimulator {
     private List<Callable<Void>> calculateVelocityTaskList = new ArrayList<>();
     private List<Callable<Void>> updateVelocityTaskList = new ArrayList<>();
     private List<Callable<Void>> updatePositionTaskList = new ArrayList<>();
-    private volatile boolean loop = true;
-    private ExecutorService exc;
 
-    public BoidsSimulator(BoidsModel model) {
+    private ExecutorService exc;
+    private Flag runFlag, resetFlag;
+
+    public BoidsSimulator(BoidsModel model, Flag runFlag, Flag resetFlag) {
         this.model = model;
         view = Optional.empty();
+        this.runFlag = runFlag;
+        this.resetFlag = resetFlag;
         initTasks();
     }
 
@@ -66,7 +69,7 @@ public class BoidsSimulator {
     public void runSimulation() {
         while (true) {
             if (view.isPresent()) {
-                if (view.get().isRunning()) {
+                if (runFlag.isSet()) {
                     t0 = System.currentTimeMillis();
 
                     try {
@@ -81,10 +84,10 @@ public class BoidsSimulator {
                     updateFrameRate(t0);
                 }
 
-                if (view.get().isResetButtonPressed()) {
+                if (resetFlag.isSet()) {
                     model.resetBoids(view.get().getNumberOfBoids());
                     view.get().update(framerate, new ArrayList<>(model.getBoids()));
-                    view.get().setResetButtonUnpressed();
+                    resetFlag.reset();
                     initTasks();
                 }
             }

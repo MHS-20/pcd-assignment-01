@@ -1,5 +1,14 @@
 # Report Assingment 1 - PCD
 
+- RWLock implementation (solo per le performance)
+
+La join viene fatta per aspettare che tutti i thread escano effettivamente da ciclo prima di settare di nuovo il reset button come unpressed. Così sono sicuro che tutti i thread facciano in tempo a vederlo. 
+Però rischio di rimanere bloccato se alcuni sono bloccati sulla prima barriera. 
+
+Quando faccio stop, non è detto che tutti stiano nel ciclo esterno, alcuni potrebbero entrare prima che lo stop venga segnalato, e gli altri non possono più entrare. 
+Il controllo di tutti i thread dovrebbe essere atomico rispetto al cambiamento della flag.
+Non c'è il rischio di rimanere bloccato sulla join perché tutti i thread rompono le barriere insieme con il main, quindi quando il main va a controllare se il reset è premuto i therad sono per forza fuori dal ciclo while interno.
+
 
 ## Analisi
 Il problema principale da affrontare era la gestione delle letture e scritture di ogni boid della lista condivisa. Infatti ogni boid per aggiornare la propria velocità deve fare riferimento ai boid vicini, di conseguenza deve leggere il loro stato. Senza nessun tipo di sincronizzazione, c'è il rischio che un thread/task vada a leggere la velocità di un boid vicino mentre un altro thread/task la sta modificando. 

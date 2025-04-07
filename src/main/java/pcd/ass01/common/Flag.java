@@ -8,33 +8,40 @@ public class Flag {
 
     private boolean flag;
     private final ReentrantLock lock;
-    private final ReadWriteLock rwlock;
-
+    //private final ReadWriteLock rwlock;
+    private final MyReadWriteLock rwlock;
 
     public Flag() {
         flag = false;
         this.lock = new ReentrantLock();
-        this.rwlock = new ReentrantReadWriteLock(true);
+        //this.rwlock = new ReentrantReadWriteLock(true);
+        this.rwlock = new MyReadWriteLock();
     }
 
     public void reset() {
-        rwlock.writeLock().lock();
+        //rwlock.writeLock().lock();
+        rwlock.writeLock();
         flag = false;
-        rwlock.writeLock().unlock();
+        rwlock.writeUnlock();
+        //rwlock.writeLock().unlock();
     }
 
     public void set() {
-        rwlock.writeLock().lock();
+       // rwlock.writeLock().lock();
+        rwlock.writeLock();
         flag = true;
-        rwlock.writeLock().unlock();
+        rwlock.writeUnlock();
+        // rwlock.writeLock().unlock();
     }
 
     public boolean isSet() {
         try {
-            rwlock.readLock().lock();
+            // rwlock.readLock().lock();
+            rwlock.readLock();
             return flag;
         } finally {
-            rwlock.readLock().unlock();
+            rwlock.readUnlock();
+            // rwlock.readLock().unlock();
         }
     }
 }

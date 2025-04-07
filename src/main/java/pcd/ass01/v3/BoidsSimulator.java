@@ -47,10 +47,10 @@ public class BoidsSimulator implements BoidsController {
         }
 
         var boids = model.getBoids();
-        computeVelocityBarrier = new MyCyclicBarrier(boids.size());
-        updateVelocityBarrier = new MyCyclicBarrier(boids.size());
-        updatePositionBarrier = new MyCyclicBarrier(boids.size() + 1);
-        updateGuiBarrier = new MyCyclicBarrier(boids.size() + 1);
+        computeVelocityBarrier = new MyCyclicBarrier(boids.size() + 1, "velocity1");
+        updateVelocityBarrier = new MyCyclicBarrier(boids.size(), "velocity2");
+        updatePositionBarrier = new MyCyclicBarrier(boids.size() + 1, "position");
+        updateGuiBarrier = new MyCyclicBarrier(boids.size() + 1, "gui");
 
         boids.forEach(boid -> {
             Thread t = Thread.ofVirtual().unstarted(new VirtualBoidWorker(boid,
@@ -90,9 +90,10 @@ public class BoidsSimulator implements BoidsController {
         while (true) {
             if (runFlag.isSet()) {
                 t0 = System.currentTimeMillis();
+                computeVelocityBarrier.await();
                 updatePositionBarrier.await();
                 view.update(framerate, new ArrayList<>(model.getBoids()));
-                updateGuiBarrier.await();
+                //updateGuiBarrier.await();
                 updateFrameRate(t0);
             }
 
@@ -108,8 +109,9 @@ public class BoidsSimulator implements BoidsController {
     private void runSimulationWithoutView() {
         while (true) {
             System.out.println("[" + this + "] " + Thread.currentThread().getName() + " -> Running");
+            computeVelocityBarrier.await();
             updatePositionBarrier.await();
-            updateGuiBarrier.await();
+            //updateGuiBarrier.await();
         }
     }
 

@@ -37,8 +37,8 @@ public class BoidsSimulation {
         Flag resetFlag = new Flag();
 
         var controller = new BoidsSimulator(model, runFlag, resetFlag);
-        //var view = new BoidsView(model, controller, SCREEN_WIDTH, SCREEN_HEIGHT, N_BOIDS);
-        //controller.attachView(view);
+        var view = new BoidsView(model, controller, SCREEN_WIDTH, SCREEN_HEIGHT, N_BOIDS);
+        controller.attachView(view);
         controller.runSimulation();
     }
 }

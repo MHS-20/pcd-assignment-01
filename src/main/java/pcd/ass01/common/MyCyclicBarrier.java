@@ -36,11 +36,13 @@ public class MyCyclicBarrier {
         if (count != parties) {
             while (currentGeneration == generation) {
                 try {
+                    //System.out.println("Thread " + Thread.currentThread() + " is waiting on barrier " + name + " with count: " + count);
                     cond.await();
                 } catch (InterruptedException e) {
                 }
             }
         } else {
+            //System.out.println("Thread " + Thread.currentThread() + " is releasing barrier " + name);
             count = 0;
             generation++;
             cond.signalAll();

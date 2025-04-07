@@ -46,7 +46,7 @@ public class BoidsSimulator implements BoidsController{
             i++;
         }
 
-        computeVelocityBarrier = new MyCyclicBarrier(N_WORKERS);
+        computeVelocityBarrier = new MyCyclicBarrier(N_WORKERS + 1);
         updateVelocityBarrier = new MyCyclicBarrier(N_WORKERS);
         updatePositionBarrier = new MyCyclicBarrier(N_WORKERS + 1);
         updateGuiBarrier = new MyCyclicBarrier(N_WORKERS + 1);
@@ -92,9 +92,10 @@ public class BoidsSimulator implements BoidsController{
         while (true) {
             if (runFlag.isSet()) {
                 t0 = System.currentTimeMillis();
+                computeVelocityBarrier.await();
                 updatePositionBarrier.await();
                 view.update(framerate, new ArrayList<>(model.getBoids()));
-                updateGuiBarrier.await();
+                //updateGuiBarrier.await();
                 updateFrameRate(t0);
             }
 
@@ -110,8 +111,9 @@ public class BoidsSimulator implements BoidsController{
     private void runSimulationWithoutView() {
         while (true) {
             System.out.println("[" + this + "] " + Thread.currentThread().getName() + " -> Running");
+            computeVelocityBarrier.await();
             updatePositionBarrier.await();
-            updateGuiBarrier.await();
+            //updateGuiBarrier.await();
         }
     }
 

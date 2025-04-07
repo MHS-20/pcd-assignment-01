@@ -43,7 +43,7 @@ public class VirtualBoidWorker implements Runnable {
 
                 boid.updatePosition(model);
                 updatePositionBarrier.await();
-                updateGuiBarrier.await();
+                //updateGuiBarrier.await();
             }
         }
     }

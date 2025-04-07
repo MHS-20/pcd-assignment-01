@@ -16,6 +16,7 @@ public class BoidsView {
     private JTextField nBoidsTextField;
     private JButton playButton;
     private int width, height;
+    private boolean isRunning;
 
     private int nBoids;
     private BoidsController controller;
@@ -27,6 +28,7 @@ public class BoidsView {
         this.height = height;
         this.nBoids = nBoids;
         this.controller = sim;
+        this.isRunning = false;
 
         frame = new JFrame("Boids Simulation");
         frame.setSize(width, height);
@@ -65,12 +67,15 @@ public class BoidsView {
 
         playButton = makeButton("Resume");
         playButton.addActionListener(e -> {
-            if (playButton.getText().equals("Suspend")) {
+            //if (playButton.getText().equals("Suspend")) {
+            if (isRunning) {
                 stop();
+                isRunning = !isRunning;
                 playButton.setText("Resume");
                 resetButton.setEnabled(true);
             } else {
                 start();
+                isRunning = !isRunning;
                 playButton.setText("Suspend");
                 nBoidsTextField.setForeground(Color.BLACK);
                 resetButton.setEnabled(false);

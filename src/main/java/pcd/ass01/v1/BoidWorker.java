@@ -63,7 +63,7 @@ public class BoidWorker extends Thread {
     private void updatePosition() {
         boidsPartition.forEach(boid -> boid.updatePosition(model));
         updatePositionBarrier.await();
-        updateGuiBarrier.await();
+        //updateGuiBarrier.await();
     }
 
     private void log(String msg) {

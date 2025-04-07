@@ -1,7 +1,11 @@
-Volatile nei campi del Boid? In tutte le versioni?
-Non so se la gestione con Interrupt vada bene.
-
+Volatile nei campi del Boid? 
 Volatile nei campi della CyclicBarrier? Però poi devi fare delle operazioni atomiche.
+
+Il controllo sulla flag non è atomico per tutti i thread insieme.
+Il bottone potrebbe essere premuto quando solo metà ha già fatto l'accesso.
+Le letture sulla Flag dovresti permetterle in parallelo, ed usare un RWLock così la lettura di tutti i thread è atomica rispetto alla pressione del bottone. 
+
+Se spammo reset va in deadlock EDT.
 
 Misurazioni: 1000 boids, 1000 iterazioni, senza GUI
 0. Execution time: 74986 ms (1 thread)

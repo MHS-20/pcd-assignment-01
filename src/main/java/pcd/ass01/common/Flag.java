@@ -1,35 +1,40 @@
 package pcd.ass01.common;
 
+import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class Flag {
 
     private boolean flag;
     private final ReentrantLock lock;
+    private final ReadWriteLock rwlock;
+
 
     public Flag() {
         flag = false;
         this.lock = new ReentrantLock();
+        this.rwlock = new ReentrantReadWriteLock(true);
     }
 
     public void reset() {
-        lock.lock();
+        rwlock.writeLock().lock();
         flag = false;
-        lock.unlock();
+        rwlock.writeLock().unlock();
     }
 
     public void set() {
-        lock.lock();
+        rwlock.writeLock().lock();
         flag = true;
-        lock.unlock();
+        rwlock.writeLock().unlock();
     }
 
     public boolean isSet() {
         try {
-            lock.lock();
+            rwlock.readLock().lock();
             return flag;
         } finally {
-            lock.unlock();
+            rwlock.readLock().unlock();
         }
     }
 }

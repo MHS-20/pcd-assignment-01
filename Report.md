@@ -49,8 +49,20 @@ diversi bottoni hanno questo effetto:
   premuto nuovamente.
 * `Reset`: quando viene premuto, i worker terminano ed il main ne crea di nuovi, con una nuova lista di boid aggiornata
   alla nuova dimensione. Il tasto reset può essere premuto solo mentre la simulazione è ferma.
+<br/><br/>
 
-<br/>
+### Reti di Petri 
+Le piazze rappresentano gli stati che attraversano i worker, mentre i token rappresentano i worker.
+<div style="text-align: center;">
+<img src="PetriNets/PN1.png" alt="PN1" width="400"/>
+
+<img src="PetriNets/PN2.png" alt="PN2" width="400"/>
+
+<img src="PetriNets/PN3.png" alt="PN3" width="400"/>
+
+</div>
+
+
 
 ## Versione 1: Platform Threads
 

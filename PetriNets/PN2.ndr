@@ -1,0 +1,22 @@
+t 275.0 115.0 t0 c 0 w n {await on barrier} s
+t 140.0 275.0 t1 c 0 w n signalAll s
+p 140.0 165.0 { } 0 w {break the barrier} s
+t 275.0 200.0 t5 c 0 w n waiting s
+p 275.0 50.0 {} 4 n {request lock} n
+p 400.0 165.0 {  } 0 n {wait for others} s
+t 515.0 165.0 t4 c 0 w n {release lock} s
+p 600.0 120.0 {     } 1 n lock n
+e t5 { } 1 n
+e {  } t5 3 se
+e t4 {     } 1 n
+e {  } t4 1 n
+e t0 {  } 2 nw
+e {     } 0.4967959712 149.0301983 t0 0.9981707139 174.0114939 1 n
+e t1 0.5024673209 129.0155029 {} 0.5052594052 242.1321953 4 n
+e t1 0.9955492749 143.0559331 {     } 0.74572841 149.0536816 1 n
+e { } t1 1 n
+e t0 { } 1 n
+e {} t0 1 n
+h PN2
+
+

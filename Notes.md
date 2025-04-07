@@ -1,5 +1,6 @@
 Volatile nei campi del Boid? 
-Volatile nei campi della CyclicBarrier? Però poi devi fare delle operazioni atomiche.
+Volatile nei campi della CyclicBarrier? 
+Però poi devi fare delle operazioni atomiche.
 
 Il controllo sulla flag non è atomico per tutti i thread insieme.
 Il bottone potrebbe essere premuto quando solo metà ha già fatto l'accesso.

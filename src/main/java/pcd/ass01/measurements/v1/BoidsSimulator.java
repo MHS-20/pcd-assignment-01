@@ -2,7 +2,6 @@ package pcd.ass01.measurements.v1;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 public class BoidsSimulator {
 
@@ -17,10 +16,10 @@ public class BoidsSimulator {
     private long t0;
     private long startTime, endTime;
 
-    private MyCyclicBarrierLocks computeVelocityBarrier;
-    private MyCyclicBarrierLocks updateVelocityBarrier;
-    private MyCyclicBarrierLocks updatePositionBarrier;
-    private MyCyclicBarrierLocks updateGuiBarrier;
+    private MyCyclicBarrier computeVelocityBarrier;
+    private MyCyclicBarrier updateVelocityBarrier;
+    private MyCyclicBarrier updatePositionBarrier;
+    private MyCyclicBarrier updateGuiBarrier;
 
     public BoidsSimulator(BoidsModel model) {
         this.model = model;
@@ -43,10 +42,10 @@ public class BoidsSimulator {
             i++;
         }
 
-        computeVelocityBarrier = new MyCyclicBarrierLocks(N_WORKERS);
-        updateVelocityBarrier = new MyCyclicBarrierLocks(N_WORKERS);
-        updatePositionBarrier = new MyCyclicBarrierLocks(N_WORKERS + 1);
-        updateGuiBarrier = new MyCyclicBarrierLocks(N_WORKERS + 1);
+        computeVelocityBarrier = new MyCyclicBarrier(N_WORKERS);
+        updateVelocityBarrier = new MyCyclicBarrier(N_WORKERS);
+        updatePositionBarrier = new MyCyclicBarrier(N_WORKERS + 1);
+        updateGuiBarrier = new MyCyclicBarrier(N_WORKERS + 1);
 
         i = 0;
         for (List<Boid> partition : partitions) {
@@ -65,10 +64,6 @@ public class BoidsSimulator {
 
     private void startWorkers() {
         boidWorkers.forEach(BoidWorker::start);
-    }
-
-    private void stopWorkers() {
-        boidWorkers.forEach(BoidWorker::interrupt);
     }
 
 //    public void attachView(BoidsView view) {

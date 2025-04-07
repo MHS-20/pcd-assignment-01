@@ -6,16 +6,16 @@ public class BoidWorker extends Thread {
 
     private final List<Boid> boidsPartition;
     private final BoidsModel model;
-    private final MyCyclicBarrierLocks computeVelocityBarrier;
-    private final MyCyclicBarrierLocks updateVelocityBarrier;
-    private final MyCyclicBarrierLocks updatePositionBarrier;
+    private final MyCyclicBarrier computeVelocityBarrier;
+    private final MyCyclicBarrier updateVelocityBarrier;
+    private final MyCyclicBarrier updatePositionBarrier;
 
     public BoidWorker(String name,
                       List<Boid> boidsPartition,
                       BoidsModel model,
-                      MyCyclicBarrierLocks computeVelocityBarrier,
-                      MyCyclicBarrierLocks updateVelocityBarrier,
-                      MyCyclicBarrierLocks updatePositionBarrier) {
+                      MyCyclicBarrier computeVelocityBarrier,
+                      MyCyclicBarrier updateVelocityBarrier,
+                      MyCyclicBarrier updatePositionBarrier) {
         super(name);
         this.boidsPartition = boidsPartition;
         this.model = model;
@@ -25,7 +25,7 @@ public class BoidWorker extends Thread {
     }
 
     public void run() {
-        while (!Thread.currentThread().isInterrupted()) {
+        while (true) {
             computeVelocity();
             updateVelocity();
             updatePosition();

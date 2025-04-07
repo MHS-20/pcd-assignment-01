@@ -1,15 +1,14 @@
 package pcd.ass01.common;
 
-import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class Flag {
 
-    private boolean flag;
+    private volatile boolean flag;
     private final ReentrantLock lock;
     //private final ReadWriteLock rwlock;
     private final MyReadWriteLock rwlock;
+    //private volatile boolean atomicCheck;
 
     public Flag() {
         flag = false;

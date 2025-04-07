@@ -14,6 +14,25 @@ Misurazioni: 1000 boids, 1000 iterazioni, senza GUI
 2. Execution time: 14101 ms (executor)
 3. Execution time: 15163 ms (virtual thread)
 
+- 1000:
+10526
+8774
+7621
+7043
+6689
+5957
+5587
+5411
+
+- 2000:
+50410
+32919
+29104
+27885
+26857
+24796
+22316
+21752
 
 ### Version 1
 Usare N thread per spezzare la lista di Boid, ed ognuno si occupa di un sottogruppo.

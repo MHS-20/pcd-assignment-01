@@ -12,7 +12,7 @@ public class BoidsSimulator {
     private static final int FRAMERATE = 50;
     private int framerate;
     private final int CORES = Runtime.getRuntime().availableProcessors();
-    private final int N_WORKERS = CORES;
+    private final int N_WORKERS = 8;
     private long t0;
     private long startTime, endTime;
 

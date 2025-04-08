@@ -1,19 +1,32 @@
 # Report Assingment 1 - PCD
 
-- MVC con notifies
+- MVC con notifies (la gui si blocca sul lock però)
 - RWLock implementation (solo per le performance)
 - PN: i token sono i thread, le piazze sono gli stati
+- Formula speedup e throughput (1 boid = 1 operazione)
+- vel1 +1: perché deve avere il tempo di aggiornare la gui prima che scrivano
+- pos + 1: ha bisogno di sapere che hanno finito di scrivere per aggiornare la gui
 
+
+### Open Design Issue: Workers Join 
 La join viene fatta per aspettare che tutti i thread escano effettivamente da ciclo prima di settare di nuovo il reset
 button come unpressed. Così sono sicuro che tutti i thread facciano in tempo a vederlo.
 Però rischio di rimanere bloccato se alcuni sono bloccati sulla prima barriera.
 
 Quando faccio stop, non è detto che tutti stiano nel ciclo esterno, alcuni potrebbero entrare prima che lo stop venga
-segnalato, e gli altri non possono più entrare.
-Il controllo di tutti i thread dovrebbe essere atomico rispetto al cambiamento della flag, anche solo per la stop.
+segnalato, e gli altri non possono più entrare. Metà è dentro e metà è fuori. Quelli dentro si bloccano sulla barriera, quelli fuori aspettano di ripartire. 
+Appena viene premuto resume, gli altri thread entrano e tutto procede normalmente. Se viene premuto reset, i thread rimasti fuori terminano, quelli rimasti dentro no.
 
-- vel1 +1: perché deve avere il tempo di aggiornare la gui
-- pos + 1: ha bisogno di sapere che hanno finito di scrivere per aggiornare la gui
+Il controllo di tutti i thread dovrebbe essere atomico rispetto al cambiamento della flag, anche solo per la stop.
+Non posso usare un counter perché se sono nel loop esterno un thread potrebbe fare molti controlli prima degli altri.
+Però se non sono in stop, posso contare gli accessi e quando raggiungo il numero di thread, allora permetto le write.
+
+Però come bloccare le write? Dovrei fare una classe AtomicWorkerGroup che si tiene lo stato running/notrunning ed il numero di thread, e viene fatto notify ad ogni controllo.
+Quando è in stato running il counter aumenta di generazione ogni volta che sono entrati tutti.
+La write può essere fatta solo quando sono tutti dentro. Ma potrebbero fare in tempo ad uscire mentre segnali la write, e potrei non fare in tempo a bloccare l'accesso al lock.
+Inoltre sto spostando il problema dell'accesso da una classe all'altra.
+
+Per ora lo risolvo con una pezza stupida, però se ne può parlare all'esame e magari ci penso meglio con più tempo dopo la consegna.
 
 ## Analisi
 
@@ -53,6 +66,8 @@ diversi bottoni hanno questo effetto:
 
 ### Reti di Petri 
 Le piazze rappresentano gli stati che attraversano i worker, mentre i token rappresentano i worker.
+Queste reti prendono in considerazione il caso di 3 worker ed il main (4 token totali).
+
 <div style="text-align: center;">
 <img src="PetriNets/PN1.png" alt="PN1" width="400"/>
 

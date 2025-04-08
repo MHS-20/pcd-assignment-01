@@ -1,4 +1,4 @@
-p 630.0 140.0 {updating velocity} 0 n
+p 630.0 140.0 {updating velocity} 0 n 
 t 540.0 140.0 t1 c 0 w n {calculate velocity barrier} s
 t 960.0 140.0 t3 c 0 w n {update position barrier} e
 p 425.0 95.0 {calculating velocity} 0 n

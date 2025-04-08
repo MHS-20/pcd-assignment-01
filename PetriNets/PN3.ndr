@@ -1,23 +1,23 @@
-p 340.0 260.0 {Flag Lock} 0 n
-t 470.0 155.0 t0 c 0 w n {Read Request} e
-t 215.0 155.0 t1 c 0 w n {Write Request} w
-p 210.0 275.0 Writing 0 w
-t 205.0 395.0 t2 c 0 w n {Write Unlock} s
-p 470.0 270.0 Reading 0 e
-t 470.0 405.0 t3 c 0 w n {Read Unlock} s
-p 345.0 50.0 {Checking runFlag} 4 n
-e t3 0.005132250739 186.096749 {Checking runFlag} 0.9934406317 291.2473176 1 n
-e t2 0.4983507853 193.0103624 {Checking runFlag} 0.5011327564 281.0071173 1 n
-e {Flag Lock} t0 1 n
-e {Flag Lock} t1 3 e
-e t3 {Flag Lock} 1 n
-e t2 {Flag Lock} 3 s
-e Writing t2 1 n
-e Reading t3 1 n
-e t0 Reading 1 n
-e t1 Writing 1 n
-e {Checking runFlag} t1 1 n
+p 380.0 205.0 {Flag Lock} 0 n
+t 270.0 300.0 t2 c 0 w n {Write Unlock} s
+t 490.0 315.0 t3 c 0 w n {Read Unlock} s
+p 500.0 205.0 {(i.e: calculating velocity/drawing boids)} 0 e Reading ne
+p 260.0 215.0 {(i.e: updating velocity/position)} 0 w Writing nw
+t 260.0 115.0 t1 c 0 w n {Write Request} w
+t 500.0 120.0 t0 c 0 w n {Read Request} e
+p 385.0 50.0 {Checking runFlag} 4 n
 e {Checking runFlag} t0 1 n
+e {Checking runFlag} t1 1 n
+e t1 {(i.e: updating velocity/position)} 1 n
+e t0 {(i.e: calculating velocity/drawing boids)} 1 n
+e {(i.e: calculating velocity/drawing boids)} t3 1 n
+e {(i.e: updating velocity/position)} t2 1 n
+e t2 {Flag Lock} 3 s
+e t3 {Flag Lock} 1 n
+e {Flag Lock} t1 3 e
+e {Flag Lock} t0 1 n
+e t2 0.4987757554 260.0076922 {Checking runFlag} 0.5017781935 358.0223457 1 n
+e t3 0.002100933313 303.0264015 {Checking runFlag} 0.9983592888 388.020618 1 n
 h PN3
 
 

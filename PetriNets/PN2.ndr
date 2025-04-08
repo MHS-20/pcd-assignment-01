@@ -1,22 +1,22 @@
-t 275.0 115.0 t0 c 0 w n {await on barrier} s
-t 140.0 275.0 t1 c 0 w n signalAll s
-p 140.0 165.0 { } 0 w {break the barrier} s
-t 275.0 200.0 t5 c 0 w n waiting s
-p 275.0 50.0 {} 4 n {request lock} n
-p 400.0 165.0 {  } 0 n {wait for others} s
-t 515.0 165.0 t4 c 0 w n {release lock} s
-p 600.0 120.0 {     } 1 n lock n
-e t5 { } 1 n
-e {  } t5 3 se
-e t4 {     } 1 n
-e {  } t4 1 n
-e t0 {  } 2 nw
-e {     } 0.4967959712 149.0301983 t0 0.9981707139 174.0114939 1 n
-e t1 0.5024673209 129.0155029 {} 0.5052594052 242.1321953 4 n
-e t1 0.9955492749 143.0559331 {     } 0.74572841 149.0536816 1 n
-e { } t1 1 n
-e t0 { } 1 n
+p 215.0 50.0 {} 4 n {request lock} n
+t 220.0 375.0 t1 c 0 w n signalAll s
+p 415.0 120.0 {     } 1 n lock n
+t 415.0 195.0 t4 c 0 w n {release lock} e
+p 310.0 290.0 { } 0 w {waiting for others} e
+t 215.0 120.0 t0 c 0 w n {counter++} w
+p 145.0 195.0 {counter == parties} 0 s
+p 285.0 195.0 {counter < parties} 0 s
+e {counter == parties} t1 1 n
+e {counter < parties} t4 1 n
+e t0 {counter < parties} 1 n
+e t0 {counter == parties} 1 n
+e t4 { } 1 n
 e {} t0 1 n
+e { } t1 3 e
+e t1 0.9950838581 356.1699031 {     } 0.9952028121 199.0904317 1 n
+e t1 0.4992198351 204.002451 {} 0.501583579 201.00995 4 e
+e {     } 0.5034593452 46.01086828 t0 0.0 37.0 1 n
+e t4 {     } 1 n
 h PN2
 
 

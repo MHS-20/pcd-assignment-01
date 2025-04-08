@@ -3,9 +3,13 @@
 - MVC con notifies (la gui si blocca sul lock però)
 - RWLock implementation (solo per le performance)
 - PN: i token sono i thread, le piazze sono gli stati
+
 - Formula speedup e throughput (1 boid = 1 operazione)
 - vel1 +1: perché deve avere il tempo di aggiornare la gui prima che scrivano
 - pos + 1: ha bisogno di sapere che hanno finito di scrivere per aggiornare la gui
+
+- Join Issue
+- Executor: spammare reset lo rallenta molto, perché?
 
 
 ### Open Design Issue: Workers Join 
@@ -26,10 +30,17 @@ Quando è in stato running il counter aumenta di generazione ogni volta che sono
 La write può essere fatta solo quando sono tutti dentro. Ma potrebbero fare in tempo ad uscire mentre segnali la write, e potrei non fare in tempo a bloccare l'accesso al lock.
 Inoltre sto spostando il problema dell'accesso da una classe all'altra.
 
-Per ora lo risolvo con una pezza stupida, però se ne può parlare all'esame e magari ci penso meglio con più tempo dopo la consegna.
+Se ti riduci ad usare interrupt vuol dire che non c'è un buon design. Non c'è un modo migliore?
+Però ha senso fare interrupt quando viene premuto reset. Hai già una flag ma non basta. 
+Dovrebbero controllare la flag anche prima di mettersi in attesa sulla barriera.
+Ma anche in quel caso, alcuni potrebbero controllarla pirma di altri, o essere già in attesa.
+Basterebbe un singolo interrupt per poterli joinare tutti.
+
+Però dovresti sporcare il codice mettendo un if prima di ogni barriera.
+Forse basterebbe una flag iteration started in OR sul ciclo interno.
+Però questa nuova flag non avrebbe gli stessi problemi?
 
 ## Analisi
-
 Il problema principale da affrontare era la gestione delle letture e scritture di ogni boid della lista condivisa.
 Infatti ogni boid per aggiornare la propria velocità deve fare riferimento ai boid vicini, di conseguenza deve leggere
 il loro stato. Senza nessun tipo di sincronizzazione, c'è il rischio che un thread/task vada a leggere la velocità di un
@@ -37,7 +48,6 @@ boid vicino mentre un altro thread/task la sta modificando.
 Ogni versione era propensa a tecniche di parallelizzazione diverse, ma la sincronizzazione era simile.
 
 ## Design
-
 In tutte le versioni, per sincronizzare le letture e scritture dei boid, sono state individuate delle fasi separate di
 lettura e scrittura dei boid. Prima di iniziare una nuova fase è necessario che tutti i thread/task abbiano terminato la
 fase precedente.
@@ -69,7 +79,7 @@ Le piazze rappresentano gli stati che attraversano i worker, mentre i token rapp
 Queste reti prendono in considerazione il caso di 3 worker ed il main (4 token totali).
 
 <div style="text-align: center;">
-<img src="PetriNets/PN1.png" alt="PN1" width="400"/>
+<img src="PetriNets/pn1.png" alt="PN1" width="400"/>
 
 <img src="PetriNets/PN2.png" alt="PN2" width="400"/>
 

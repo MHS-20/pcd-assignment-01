@@ -33,18 +33,6 @@ public class BoidsSimulator implements BoidsController {
     private void initWorkers() {
         workers.clear();
 
-        List<List<Boid>> partitions = new ArrayList<>();
-        for (int i = 0; i < N_WORKERS; i++) {
-            partitions.add(new ArrayList<>());
-        }
-
-        int i = 0;
-        for (Boid boid : model.getBoids()) {
-            i = (i == partitions.size() ? 0 : i);
-            partitions.get(i).add(boid);
-            i++;
-        }
-
         var boids = model.getBoids();
         computeVelocityBarrier = new MyCyclicBarrier(boids.size() + 1, "velocity1");
         updateVelocityBarrier = new MyCyclicBarrier(boids.size(), "velocity2");
@@ -52,13 +40,13 @@ public class BoidsSimulator implements BoidsController {
 
         boids.forEach(boid -> {
             Thread t = Thread.ofVirtual().unstarted(new VirtualBoidWorker(boid,
-                        model,
-                        computeVelocityBarrier,
-                        updateVelocityBarrier,
-                        updatePositionBarrier,
-                        runFlag,
-                        resetFlag
-                ));
+                    model,
+                    computeVelocityBarrier,
+                    updateVelocityBarrier,
+                    updatePositionBarrier,
+                    runFlag,
+                    resetFlag
+            ));
             workers.add(t);
         });
 

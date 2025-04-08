@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class BoidsSimulator implements BoidsController{
+public class BoidsSimulator implements BoidsController {
 
     private final BoidsModel model;
     private Optional<BoidsView> view;
@@ -99,6 +99,21 @@ public class BoidsSimulator implements BoidsController{
                 view.update(framerate, new ArrayList<>(model.getBoids()));
                 notifyResetUnpressed();
                 initWorkers();
+            }
+        }
+    }
+
+    private void joinWorkers() {
+        while (!boidWorkers.isEmpty()) {
+            for (int i = 0; i < boidWorkers.size(); i++) {
+                var w = boidWorkers.get(i);
+                if (w.isAlive()) {
+                    System.out.println("Interrupting: " + w);
+                    w.interrupt();
+                } else {
+                    System.out.println("Removing: " + w);
+                    boidWorkers.remove(w);
+                }
             }
         }
     }

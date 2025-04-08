@@ -15,7 +15,7 @@ public class BoidsSimulator implements BoidsController {
     private static final int FRAMERATE = 50;
     private int framerate;
     private final int CORES = Runtime.getRuntime().availableProcessors();
-    private final int N_WORKERS = CORES + 1;
+    private final int N_WORKERS = CORES;
     private long t0;
 
     private List<Callable<Void>> calculateVelocityTaskList = new ArrayList<>();
@@ -30,23 +30,14 @@ public class BoidsSimulator implements BoidsController {
         view = Optional.empty();
         this.runFlag = runFlag;
         this.resetFlag = resetFlag;
+        exc = Executors.newFixedThreadPool(N_WORKERS);
     }
 
     private void initTasks() {
         var boids = model.getBoids();
-
-        if (exc != null && !exc.isShutdown()) {
-            exc.shutdown();
-            try {
-                if (!exc.awaitTermination(1, TimeUnit.SECONDS)) {
-                    exc.shutdownNow();
-                }
-            } catch (InterruptedException e) {
-                exc.shutdownNow();
-            }
-        }
-
-        exc = Executors.newFixedThreadPool(N_WORKERS);
+        calculateVelocityTaskList.clear();
+        updateVelocityTaskList.clear();
+        updatePositionTaskList.clear();
 
         boids.forEach(boid -> {
             calculateVelocityTaskList.add(new ComputeVelocityTask(boid, model));
@@ -143,5 +134,19 @@ public class BoidsSimulator implements BoidsController {
         } else {
             framerate = (int) (1000 / dtElapsed);
         }
+    }
+
+    private void resetExecutor() {
+        if (exc != null && !exc.isShutdown()) {
+            exc.shutdown();
+            try {
+                if (!exc.awaitTermination(1, TimeUnit.SECONDS)) {
+                    exc.shutdownNow();
+                }
+            } catch (InterruptedException e) {
+                exc.shutdownNow();
+            }
+        }
+        exc = Executors.newFixedThreadPool(N_WORKERS);
     }
 }

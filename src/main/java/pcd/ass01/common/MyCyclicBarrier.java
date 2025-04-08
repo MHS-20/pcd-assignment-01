@@ -4,9 +4,9 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class MyCyclicBarrier {
-    private int generation;
+    private volatile int generation;
     private final int parties;
-    private int count;
+    private volatile int count;
     private ReentrantLock mutex;
     private Condition cond;
     private String name;

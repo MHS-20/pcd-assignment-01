@@ -37,26 +37,16 @@ public class BoidWorker extends Thread {
     public void run() {
         while (!resetFlag.isSet()) {
             while (runFlag.isSet()) {
-                computeVelocity();
-                updateVelocity();
-                updatePosition();
+                boidsPartition.forEach(boid -> boid.calculateVelocity(model));
+                computeVelocityBarrier.await();
+
+                boidsPartition.forEach(boid -> boid.updateVelocity(model));
+                updateVelocityBarrier.await();
+
+                boidsPartition.forEach(boid -> boid.updatePosition(model));
+                updatePositionBarrier.await();
             }
         }
-    }
-
-    private void computeVelocity() {
-        boidsPartition.forEach(boid -> boid.calculateVelocity(model));
-        computeVelocityBarrier.await();
-    }
-
-    private void updateVelocity() {
-        boidsPartition.forEach(boid -> boid.updateVelocity(model));
-        updateVelocityBarrier.await();
-    }
-
-    private void updatePosition() {
-        boidsPartition.forEach(boid -> boid.updatePosition(model));
-        updatePositionBarrier.await();
     }
 
     private void log(String msg) {

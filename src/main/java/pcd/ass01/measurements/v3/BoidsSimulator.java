@@ -7,7 +7,7 @@ import java.util.Optional;
 public class BoidsSimulator {
 
     private final BoidsModel model;
-    private Optional<BoidsView> view;
+    //private Optional<BoidsView> view;
     private List<Thread> workers = new ArrayList<>();
 
     private static final int FRAMERATE = 50;
@@ -15,16 +15,14 @@ public class BoidsSimulator {
     private final int CORES = Runtime.getRuntime().availableProcessors();
     private final int N_WORKERS = CORES + 1;
     private long t0;
-    private volatile boolean loop = true;
 
     private MyCyclicBarrier computeVelocityBarrier;
     private MyCyclicBarrier updateVelocityBarrier;
     private MyCyclicBarrier updatePositionBarrier;
-    private MyCyclicBarrier updateGuiBarrier;
 
     public BoidsSimulator(BoidsModel model) {
         this.model = model;
-        view = Optional.empty();
+        //view = Optional.empty();
         initWorkers();
     }
 
@@ -47,11 +45,9 @@ public class BoidsSimulator {
         computeVelocityBarrier = new MyCyclicBarrier(boids.size(), "velocity1");
         updateVelocityBarrier = new MyCyclicBarrier(boids.size(), "velocity2");
         updatePositionBarrier = new MyCyclicBarrier(boids.size() + 1, "position");
-        updateGuiBarrier = new MyCyclicBarrier(boids.size() + 1, "gui");
 
         boids.forEach(boid -> {
             Thread t = Thread.ofVirtual().unstarted(() -> {
-                // while (!Thread.currentThread().isInterrupted()) {
                 while (true) {
                     boid.calculateVelocity(model);
                     computeVelocityBarrier.await();
@@ -60,7 +56,6 @@ public class BoidsSimulator {
                     boid.updatePosition(model);
                     updatePositionBarrier.await();
                 }
-                //System.out.println(Thread.currentThread() + " exiting");
             });
 
             workers.add(t);
@@ -71,10 +66,6 @@ public class BoidsSimulator {
 
     private void startWorkers() {
         workers.forEach(Thread::start);
-    }
-
-    private void stopWorkers() {
-        workers.forEach(Thread::interrupt);
     }
 
 //    public void attachView(BoidsView view) {

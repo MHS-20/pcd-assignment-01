@@ -24,24 +24,11 @@ public class BoidsSimulator {
     public BoidsSimulator(BoidsModel model) {
         this.model = model;
         //view = Optional.empty();
-        initTasks();
+        exc = Executors.newFixedThreadPool(N_WORKERS);
     }
 
     private void initTasks() {
         var boids = model.getBoids();
-
-        if (exc != null && !exc.isShutdown()) {
-            exc.shutdown();
-            try {
-                if (!exc.awaitTermination(1, TimeUnit.SECONDS)) {
-                    exc.shutdownNow();
-                }
-            } catch (InterruptedException e) {
-                exc.shutdownNow();
-            }
-        }
-
-        exc = Executors.newFixedThreadPool(N_WORKERS);
 
         boids.forEach(boid -> {
             calculateVelocityTaskList.add(new ComputeVelocityTask(boid, model));

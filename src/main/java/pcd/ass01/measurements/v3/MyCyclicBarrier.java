@@ -38,7 +38,7 @@ public class MyCyclicBarrier {
                 try {
                     cond.await();
                 } catch (InterruptedException e) {
-
+                    throw new RuntimeException(e);
                 }
             }
         } else {

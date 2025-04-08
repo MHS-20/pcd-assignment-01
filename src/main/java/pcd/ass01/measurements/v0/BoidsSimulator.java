@@ -1,7 +1,5 @@
 package pcd.ass01.measurements.v0;
 
-import java.util.Optional;
-
 public class BoidsSimulator {
 
     private BoidsModel model;

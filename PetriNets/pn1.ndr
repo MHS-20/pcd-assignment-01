@@ -1,28 +1,30 @@
-p 630.0 140.0 {updating velocity} 0 n 
-t 540.0 140.0 t1 c 0 w n {calculate velocity barrier} s
-t 960.0 140.0 t3 c 0 w n {update position barrier} e
-p 425.0 95.0 {calculating velocity} 0 n
-p 425.0 185.0 main1 0 n
-p 850.0 140.0 {updating position} 0 n
-t 745.0 140.0 t2 c 0 w n {update velocity barrier} s
-p 855.0 225.0 main2 0 n
-t 330.0 135.0 t0 c 0 w n {start iteration} s
-t 110.0 135.0 t4 c 0 w n {not running} w
-p 245.0 135.0 {checking run flag} 4 n
-p 110.0 300.0 {checking reset flag} 0 s
-t 185.0 235.0 t5 c 0 w n {not resetting} n
-t 245.0 300.0 t6 c 0 w n resetting s
-e t0 {calculating velocity} 3 n
-e {calculating velocity} t1 3 n
-e t1 {updating velocity} 3 nw
-e {updating velocity} t2 3 n
-e t2 {updating position} 3 n
-e {updating position} t3 3 n
-e main1 t1 1 n
-e t0 main1 1 n
-e t1 0.847427096 114.8564321 main2 0.5030602948 104.019229 1 n
-e main2 0.0 35.0 t3 0.7591367852 87.14355972 1 n
-e t3 0.2595378621 100.1798383 {checking run flag} 0.2283155531 125.1598977 4 n
+p 630.0 175.0 {workers: updating velocity} 0 n
+t 540.0 175.0 t1 c 0 w n {calculate velocity barrier} s
+t 330.0 170.0 t0 c 0 w n {start iteration} s
+t 110.0 170.0 t4 c 0 w n {not running} w
+p 245.0 170.0 {checking run flag} 4 n
+p 110.0 335.0 {checking reset flag} 0 s
+t 185.0 270.0 t5 c 0 w n {not resetting} n
+t 245.0 335.0 t6 c 0 w n resetting s
+p 835.0 175.0 {workers: updating position} 0 n
+t 945.0 175.0 t3 c 0 w n {update position barrier} s
+p 425.0 215.0 {main: waiting} 0 s
+t 1125.0 175.0 t7 c 0 w n {gui updated} s
+p 1035.0 175.0 {main: updating gui} 0 n
+p 425.0 150.0 {workers: calculating velocity} 0 n
+t 735.0 175.0 t2 c 0 w n {update velocity barrier} s
+p 840.0 270.0 {main: waiting    } 0 n
+e t0 {workers: calculating velocity} 3 n
+e {workers: calculating velocity} t1 3 n
+e t1 {workers: updating velocity} 3 nw
+e {workers: updating velocity} t2 3 n
+e t2 {workers: updating position} 3 n
+e {workers: updating position} t3 3 n
+e {main: waiting} t1 1 n
+e t0 {main: waiting} 1 n
+e t1 0.8634871566 97.83659852 {main: waiting    } 0.5030602948 104.019229 1 n
+e {main: waiting    } 0.0 35.0 t3 0.7591367858 87.14355973 1 n
+e t3 0.2623235403 116.3486141 {checking run flag} 0.1995569709 131.552271 3 e
 e {checking run flag} t0 4 n
 e {checking run flag} t4 4 n
 e t4 {checking reset flag} 4 nw
@@ -30,6 +32,9 @@ e t5 {checking run flag} 4 w
 e {checking reset flag} t5 4 w
 e {checking reset flag} t6 4 n
 e t6 {checking run flag} 4 se
-h pn1
+e t3 {main: updating gui} 1 n
+e {main: updating gui} t7 1 n
+e t7 0.25 125.0 {checking run flag} 0.3012081912 167.600716 1 n
+h PN1
 
 

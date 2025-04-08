@@ -1,10 +1,9 @@
-Volatile nei campi del Boid? 
 Volatile nei campi della CyclicBarrier? 
 Però poi devi fare delle operazioni atomiche.
 
 Il controllo sulla flag non è atomico per tutti i thread insieme.
 Il bottone potrebbe essere premuto quando solo metà ha già fatto l'accesso.
-Le letture sulla Flag dovresti permetterle in parallelo, ed usare un RWLock così la lettura di tutti i thread è atomica rispetto alla pressione del bottone. 
+Le letture sulla Flag dovresti permetterle in parallelo, ed usare un RWLock. 
 
 Se spammo reset va in deadlock EDT.
 

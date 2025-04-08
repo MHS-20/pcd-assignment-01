@@ -80,11 +80,12 @@ Queste reti prendono in considerazione il caso di 3 worker ed il main (4 token t
 
 <div style="text-align: center;">
 <img src="PetriNets/pn1.png" alt="PN1" width="400"/>
+<br/><br/>
 
 <img src="PetriNets/PN2.png" alt="PN2" width="400"/>
-
+<br/>
+<br/>
 <img src="PetriNets/PN3.png" alt="PN3" width="400"/>
-
 </div>
 
 

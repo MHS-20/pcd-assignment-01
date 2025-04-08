@@ -1,0 +1,42 @@
+t 540.0 170.0 t1 c 0 w n invokeAll_2 s
+t 330.0 165.0 t0 c 0 w n invokeAll_1 s
+t 110.0 165.0 t4 c 0 w n {not running} w
+p 110.0 330.0 {checking reset flag} 0 s
+t 185.0 265.0 t5 c 0 w n {not resetting} n
+t 245.0 330.0 t6 c 0 w n resetting s
+t 945.0 170.0 t3 c 0 w n {start gui update} s
+t 1125.0 170.0 t7 c 0 w n {gui updated} s
+p 1035.0 170.0 {main: updating gui} 0 n
+t 725.0 170.0 t2 c 0 w n invokeAll_3 s
+p 245.0 165.0 {checking run flag} 4 n
+p 435.0 125.0 {tasks: calculating velocity} 0 n
+p 430.0 200.0 {main: waitOnFutures1} 0 s
+p 635.0 205.0 {main:waitOnFutures2} 0 s
+p 635.0 135.0 {tasks: updating velocity} 0 n
+p 835.0 145.0 {tasks: updating position} 0 n
+p 840.0 210.0 {main: waitOnFutures3} 0 s
+e {main: waitOnFutures3} t3 1 n
+e t2 {main: waitOnFutures3} 1 n
+e t1 {main:waitOnFutures2} 1 n
+e {main:waitOnFutures2} t2 1 n
+e t0 {tasks: calculating velocity} 3 n
+e {tasks: calculating velocity} t1 3 n
+e t1 {tasks: updating velocity} 3 nw
+e {tasks: updating velocity} t2 3 n
+e t2 {tasks: updating position} 3 n
+e {tasks: updating position} t3 3 n
+e {main: waitOnFutures1} t1 1 n
+e t0 {main: waitOnFutures1} 1 n
+e {checking run flag} t0 4 n
+e {checking run flag} t4 4 n
+e t4 {checking reset flag} 4 nw
+e t5 {checking run flag} 4 w
+e {checking reset flag} t5 4 w
+e {checking reset flag} t6 4 n
+e t6 {checking run flag} 4 se
+e t3 {main: updating gui} 1 n
+e {main: updating gui} t7 1 n
+e t7 0.25 125.0 {checking run flag} 0.2262525645 154.7191003 4 n
+h PN4
+
+

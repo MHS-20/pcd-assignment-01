@@ -9,7 +9,6 @@ public class VirtualBoidWorker implements Runnable {
     private MyCyclicBarrier computeVelocityBarrier;
     private MyCyclicBarrier updateVelocityBarrier;
     private MyCyclicBarrier updatePositionBarrier;
-    private MyCyclicBarrier updateGuiBarrier;
     private Flag runFlag;
     private Flag resetFlag;
 
@@ -18,7 +17,6 @@ public class VirtualBoidWorker implements Runnable {
                              MyCyclicBarrier computeVelocityBarrier,
                              MyCyclicBarrier updateVelocityBarrier,
                              MyCyclicBarrier updatePositionBarrier,
-                             MyCyclicBarrier updateGuiBarrier,
                              Flag runFlag,
                              Flag resetFlag) {
         this.boid = boid;
@@ -26,7 +24,6 @@ public class VirtualBoidWorker implements Runnable {
         this.computeVelocityBarrier = computeVelocityBarrier;
         this.updateVelocityBarrier = updateVelocityBarrier;
         this.updatePositionBarrier = updatePositionBarrier;
-        this.updateGuiBarrier = updateGuiBarrier;
         this.runFlag = runFlag;
         this.resetFlag = resetFlag;
     }
@@ -43,7 +40,6 @@ public class VirtualBoidWorker implements Runnable {
 
                 boid.updatePosition(model);
                 updatePositionBarrier.await();
-                //updateGuiBarrier.await();
             }
         }
     }

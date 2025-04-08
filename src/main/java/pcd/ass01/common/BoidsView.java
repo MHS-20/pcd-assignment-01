@@ -16,12 +16,10 @@ public class BoidsView {
     private JTextField nBoidsTextField;
     private JButton playButton;
     private int width, height;
-    private boolean isRunning;
 
     private int nBoids;
     private BoidsController controller;
-    //private ConcurrentLinkedQueue<List<Boid>> snapshotsQueue;
-    //private FIFOqueue<List<Boid>> snapshotsQueue;
+    private boolean isRunning; //only for internal usage and button toggle
 
     public BoidsView(BoidsModel model, BoidsController sim, int width, int height, int nBoids) {
         this.width = width;
@@ -67,7 +65,6 @@ public class BoidsView {
 
         playButton = makeButton("Resume");
         playButton.addActionListener(e -> {
-            //if (playButton.getText().equals("Suspend")) {
             if (isRunning) {
                 stop();
                 isRunning = !isRunning;
@@ -129,37 +126,17 @@ public class BoidsView {
         }
     }
 
-//    public boolean isRunning() {
-//        return this.isRunning;
-//    }
-
     public void start() {
-        //runFlag.set();
-        //this.isRunning = true;
         controller.notifyStart();
     }
 
     public void stop() {
-        //this.isRunning = false;
-        //runFlag.reset();
         controller.notifyStop();
     }
 
-//    public boolean isResetButtonPressed() {
-//        return isResetButtonPressed;
-//    }
-
     public void setResetButtonPressed() {
-        //this.isResetButtonPressed = true;
-        //resetFlag.set();
         controller.notifyResetPressed();
     }
-
-//    public void setResetButtonUnpressed() {
-//        //this.isResetButtonPressed = false;
-//        //resetFlag.reset();
-//        controller.notifyUnReset();
-//    }
 
     private JButton makeButton(String text) {
         return new JButton(text);

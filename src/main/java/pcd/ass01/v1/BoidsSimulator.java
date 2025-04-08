@@ -22,7 +22,6 @@ public class BoidsSimulator implements BoidsController{
     private MyCyclicBarrier computeVelocityBarrier;
     private MyCyclicBarrier updateVelocityBarrier;
     private MyCyclicBarrier updatePositionBarrier;
-    private MyCyclicBarrier updateGuiBarrier;
 
     public BoidsSimulator(BoidsModel model, Flag runFlag, Flag resetFlag) {
         this.model = model;
@@ -49,20 +48,17 @@ public class BoidsSimulator implements BoidsController{
         computeVelocityBarrier = new MyCyclicBarrier(N_WORKERS + 1);
         updateVelocityBarrier = new MyCyclicBarrier(N_WORKERS);
         updatePositionBarrier = new MyCyclicBarrier(N_WORKERS + 1);
-        updateGuiBarrier = new MyCyclicBarrier(N_WORKERS + 1);
 
         i = 0;
         for (List<Boid> partition : partitions) {
             boidWorkers.add(new BoidWorker("W" + i,
                     partition,
                     model,
-                    view,
                     runFlag,
                     resetFlag,
                     computeVelocityBarrier,
                     updateVelocityBarrier,
-                    updatePositionBarrier,
-                    updateGuiBarrier
+                    updatePositionBarrier
             ));
             i++;
         }
@@ -95,7 +91,6 @@ public class BoidsSimulator implements BoidsController{
                 computeVelocityBarrier.await();
                 updatePositionBarrier.await();
                 view.update(framerate, new ArrayList<>(model.getBoids()));
-                //updateGuiBarrier.await();
                 updateFrameRate(t0);
             }
 
@@ -113,7 +108,6 @@ public class BoidsSimulator implements BoidsController{
             System.out.println("[" + this + "] " + Thread.currentThread().getName() + " -> Running");
             computeVelocityBarrier.await();
             updatePositionBarrier.await();
-            //updateGuiBarrier.await();
         }
     }
 

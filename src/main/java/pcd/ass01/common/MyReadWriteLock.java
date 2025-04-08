@@ -8,9 +8,9 @@ public class MyReadWriteLock {
     private final Condition canRead;
     private final Condition canWrite;
 
-    private int readers = 0;
-    private int writers = 0;
-    private int writeRequests = 0;
+    private volatile int readers = 0;
+    private volatile int writers = 0;
+    private volatile int writeRequests = 0;
 
     public MyReadWriteLock() {
         lock = new ReentrantLock();
@@ -24,7 +24,7 @@ public class MyReadWriteLock {
             try {
                 canRead.await();
             } catch (InterruptedException e) {
-                //throw new RuntimeException(e);
+                throw new RuntimeException(e);
             }
         }
         readers++;
@@ -47,7 +47,7 @@ public class MyReadWriteLock {
             try {
                 canWrite.await();
             } catch (InterruptedException e) {
-                //throw new RuntimeException(e);
+                throw new RuntimeException(e);
             }
         }
 

@@ -39,6 +39,7 @@ public class MyCyclicBarrier {
                     //System.out.println("Thread " + Thread.currentThread() + " is waiting on barrier " + name + " with count: " + count);
                     cond.await();
                 } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
                 }
             }
         } else {

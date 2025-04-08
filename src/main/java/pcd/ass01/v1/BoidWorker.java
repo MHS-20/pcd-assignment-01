@@ -9,35 +9,29 @@ public class BoidWorker extends Thread {
 
     private final List<Boid> boidsPartition;
     private final BoidsModel model;
-    private final Optional<BoidsView> view;
 
     private final MyCyclicBarrier computeVelocityBarrier;
     private final MyCyclicBarrier updateVelocityBarrier;
     private final MyCyclicBarrier updatePositionBarrier;
-    private final MyCyclicBarrier updateGuiBarrier;
 
-    private Flag runFlag, resetFlag;
-
+    private final Flag runFlag;
+    private final Flag resetFlag;
 
     public BoidWorker(String name,
                       List<Boid> boidsPartition,
                       BoidsModel model,
-                      Optional<BoidsView> view,
                       Flag runFlag, Flag resetFlag,
                       MyCyclicBarrier computeVelocityBarrier,
                       MyCyclicBarrier updateVelocityBarrier,
-                      MyCyclicBarrier updatePositionBarrier,
-                      MyCyclicBarrier updateGuiBarrier) {
+                      MyCyclicBarrier updatePositionBarrier) {
         super(name);
         this.boidsPartition = boidsPartition;
         this.model = model;
-        this.view = view;
         this.runFlag = runFlag;
         this.resetFlag = resetFlag;
         this.computeVelocityBarrier = computeVelocityBarrier;
         this.updateVelocityBarrier = updateVelocityBarrier;
         this.updatePositionBarrier = updatePositionBarrier;
-        this.updateGuiBarrier = updateGuiBarrier;
     }
 
     public void run() {
@@ -63,7 +57,6 @@ public class BoidWorker extends Thread {
     private void updatePosition() {
         boidsPartition.forEach(boid -> boid.updatePosition(model));
         updatePositionBarrier.await();
-        //updateGuiBarrier.await();
     }
 
     private void log(String msg) {

@@ -14,8 +14,7 @@ public class BoidsSimulator implements BoidsController {
 
     private static final int FRAMERATE = 50;
     private int framerate;
-    private final int CORES = Runtime.getRuntime().availableProcessors();
-    private final int N_WORKERS = CORES;
+    private final int N_WORKERS = Runtime.getRuntime().availableProcessors();
     private long t0;
 
     private List<Callable<Void>> calculateVelocityTaskList = new ArrayList<>();
@@ -120,7 +119,7 @@ public class BoidsSimulator implements BoidsController {
         resetFlag.reset();
     }
 
-    private void updateFrameRate(long t0) {
+    public int updateFrameRate(long t0) {
         var t1 = System.currentTimeMillis();
         var dtElapsed = t1 - t0;
         var frameratePeriod = 1000 / FRAMERATE;
@@ -134,6 +133,7 @@ public class BoidsSimulator implements BoidsController {
         } else {
             framerate = (int) (1000 / dtElapsed);
         }
+        return framerate;
     }
 
     private void resetExecutor() {

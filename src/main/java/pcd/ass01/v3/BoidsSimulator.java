@@ -1,7 +1,6 @@
 package pcd.ass01.v3;
 
 import pcd.ass01.common.*;
-import pcd.ass01.v1.BoidWorker;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,13 +12,10 @@ public class BoidsSimulator implements BoidsController {
     private Optional<BoidsView> view;
     private List<Thread> workers = new ArrayList<>();
 
-    private static final int FRAMERATE = 50;
+    private static final int MAX_FRAMERATE = 50;
     private int framerate;
-    private final int CORES = Runtime.getRuntime().availableProcessors();
-    private final int N_WORKERS = CORES;
-    private long t0;
     private Flag runFlag, resetFlag;
-    private MasterWorker master;
+    private MasterAgent master;
 
     private volatile MyCyclicBarrier computeVelocityBarrier;
     private volatile MyCyclicBarrier updateVelocityBarrier;
@@ -36,10 +32,10 @@ public class BoidsSimulator implements BoidsController {
         workers.clear();
 
         var boids = model.getBoids();
-        computeVelocityBarrier = new MyCyclicBarrier(boids.size() + 1, "velocity1");
-        updateVelocityBarrier = new MyCyclicBarrier(boids.size(), "velocity2");
-        updatePositionBarrier = new MyCyclicBarrier(boids.size() + 1, "position");
-        master = new MasterWorker(
+        computeVelocityBarrier = new MyCyclicBarrier(boids.size() + 1);
+        updateVelocityBarrier = new MyCyclicBarrier(boids.size());
+        updatePositionBarrier = new MyCyclicBarrier(boids.size() + 1);
+        master = new MasterAgent(
                 model,
                 view.get(),
                 this,
@@ -47,7 +43,7 @@ public class BoidsSimulator implements BoidsController {
                 updatePositionBarrier,
                 runFlag,
                 resetFlag,
-                FRAMERATE
+                MAX_FRAMERATE
         );
 
         boids.forEach(boid -> {
@@ -66,7 +62,6 @@ public class BoidsSimulator implements BoidsController {
     }
 
     private void startWorkers() {
-        master.start();
         workers.forEach(Thread::start);
     }
 
@@ -77,6 +72,7 @@ public class BoidsSimulator implements BoidsController {
     public void runSimulation() {
         initWorkers();
         if (view.isPresent()) {
+            master.start();
             runSimulationWithView(view.get());
         } else {
             runFlag.set();
@@ -86,26 +82,13 @@ public class BoidsSimulator implements BoidsController {
 
     private void runSimulationWithView(BoidsView view) {
         while (true) {
-//            if (runFlag.isSet()) {
-//                System.out.println("Running");
-//                t0 = System.currentTimeMillis();
-//                computeVelocityBarrier.await();
-//                updatePositionBarrier.await();
-//                System.out.println("Waited");
-//                view.update(framerate, new ArrayList<>(model.getBoids()));
-//                updateFrameRate(t0);
-//            } else
-//                System.out.println("Stopped");
-
-            System.out.println("Alive");
-
             if (resetFlag.isSet()) {
-                System.out.println("Resetting");
                 terminateWorkers();
                 model.resetBoids(view.getNumberOfBoids());
                 view.update(framerate, new ArrayList<>(model.getBoids()));
                 notifyResetUnpressed();
                 initWorkers();
+                master.start();
             }
         }
     }
@@ -119,25 +102,15 @@ public class BoidsSimulator implements BoidsController {
     }
 
     private void terminateWorkers() {
-        // awakes suspended threads
-        System.out.println("Terminating workers");
+        // awakes suspended threads if any
         computeVelocityBarrier.breaks();
         updateVelocityBarrier.breaks();
         updatePositionBarrier.breaks();
 
-//        for (Thread w : workers){
-//            if(w.isAlive()){
-//                System.out.println(w.getState());
-//                computeVelocityBarrier.breaks();
-//            }
-//        }
-
         try {
             //checks all threads have terminated
-            for (Thread w : workers) {
-                //System.out.println("Joining: " + w);
+            for (Thread w : workers)
                 w.join();
-            }
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -159,19 +132,21 @@ public class BoidsSimulator implements BoidsController {
         resetFlag.reset();
     }
 
-    public void updateFrameRate(long t0) {
+    public int updateFrameRate(long t0) {
         var t1 = System.currentTimeMillis();
         var dtElapsed = t1 - t0;
-        var frameratePeriod = 1000 / FRAMERATE;
+        var frameratePeriod = 1000 / MAX_FRAMERATE;
         if (dtElapsed < frameratePeriod) {
             try {
                 Thread.sleep(frameratePeriod - dtElapsed);
             } catch (Exception ex) {
                 System.out.println(ex);
             }
-            framerate = FRAMERATE;
+            framerate = MAX_FRAMERATE;
         } else {
             framerate = (int) (1000 / dtElapsed);
         }
+
+        return framerate;
     }
 }

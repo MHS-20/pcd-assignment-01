@@ -12,12 +12,11 @@ public class BoidsSimulator implements BoidsController {
     private Optional<BoidsView> view;
     private final List<BoidWorker> boidWorkers = new ArrayList<>();
 
-    private static final int FRAMERATE = 50;
+    private static final int MAX_FRAMERATE = 50;
     private int framerate;
-    private final int CORES = Runtime.getRuntime().availableProcessors();
-    private final int N_WORKERS = CORES;
-    private long t0;
+    private final int N_WORKERS = Runtime.getRuntime().availableProcessors();
 
+    private MasterAgent master;
     private Flag runFlag, resetFlag;
     private MyCyclicBarrier computeVelocityBarrier;
     private MyCyclicBarrier updateVelocityBarrier;
@@ -49,6 +48,18 @@ public class BoidsSimulator implements BoidsController {
         updateVelocityBarrier = new MyCyclicBarrier(N_WORKERS);
         updatePositionBarrier = new MyCyclicBarrier(N_WORKERS + 1);
 
+        master = new MasterAgent(
+                model,
+                view.get(),
+                this,
+                computeVelocityBarrier,
+                updatePositionBarrier,
+                runFlag,
+                resetFlag,
+                MAX_FRAMERATE
+        );
+
+
         i = 0;
         for (List<Boid> partition : partitions) {
             boidWorkers.add(new BoidWorker("W" + i,
@@ -77,6 +88,7 @@ public class BoidsSimulator implements BoidsController {
     public void runSimulation() {
         initWorkers();
         if (view.isPresent()) {
+            master.start();
             runSimulationWithView(view.get());
         } else {
             runFlag.set();
@@ -86,20 +98,13 @@ public class BoidsSimulator implements BoidsController {
 
     private void runSimulationWithView(BoidsView view) {
         while (true) {
-            if (runFlag.isSet()) {
-                t0 = System.currentTimeMillis();
-                computeVelocityBarrier.await();
-                updatePositionBarrier.await();
-                view.update(framerate, new ArrayList<>(model.getBoids()));
-                updateFrameRate(t0);
-            }
-
             if (resetFlag.isSet()) {
                 terminateWorkers();
                 model.resetBoids(view.getNumberOfBoids());
                 view.update(framerate, new ArrayList<>(model.getBoids()));
                 notifyResetUnpressed();
                 initWorkers();
+                master.start();
             }
         }
     }
@@ -117,14 +122,6 @@ public class BoidsSimulator implements BoidsController {
         computeVelocityBarrier.breaks();
         updateVelocityBarrier.breaks();
         updatePositionBarrier.breaks();
-
-        for (BoidWorker w : boidWorkers) {
-            if (w.isAlive()) {
-                computeVelocityBarrier.breaks();
-                updateVelocityBarrier.breaks();
-                updatePositionBarrier.breaks();
-            }
-        }
 
         try {
             //checks all threads have terminated
@@ -151,10 +148,10 @@ public class BoidsSimulator implements BoidsController {
         resetFlag.reset();
     }
 
-    private void updateFrameRate(long t0) {
+    public int updateFrameRate(long t0) {
         var t1 = System.currentTimeMillis();
         var dtElapsed = t1 - t0;
-        var frameratePeriod = 1000 / FRAMERATE;
+        var frameratePeriod = 1000 / MAX_FRAMERATE;
         if (dtElapsed < frameratePeriod) {
             try {
                 //System.out.println("Sleeping for " + (frameratePeriod - dtElapsed));
@@ -162,9 +159,10 @@ public class BoidsSimulator implements BoidsController {
             } catch (Exception ex) {
                 System.out.println(ex);
             }
-            framerate = FRAMERATE;
+            framerate = MAX_FRAMERATE;
         } else {
             framerate = (int) (1000 / dtElapsed);
         }
+        return framerate;
     }
 }

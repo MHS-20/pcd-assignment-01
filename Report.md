@@ -137,7 +137,7 @@ o deadlock.
 
 ## Versione 2: Executor
 
-In questa versione sono stati creati delle classi `Task` diverse per le fasi di lettura/calcolo ed aggiornamento dei
+In questa versione sono stati create delle classi `Task` diverse per le fasi di lettura/calcolo ed aggiornamento dei
 boid.
 In ogni fase, viene creato un task per ogni boid, e poi invocati in parallelo tramite un `ExecutorService` di tipo
 `FixedThreadPool`.

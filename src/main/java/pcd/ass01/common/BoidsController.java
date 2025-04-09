@@ -7,4 +7,5 @@ public interface BoidsController {
     public void notifyResetUnpressed();
     public void runSimulation();
     public void attachView(BoidsView view);
+    public int updateFrameRate(long t0);
 }

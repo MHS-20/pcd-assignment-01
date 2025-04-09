@@ -33,18 +33,14 @@ public class VirtualBoidWorker implements Runnable {
         while (!resetFlag.isSet()) {
             while (runFlag.isSet()) {
                 boid.calculateVelocity(model);
-                if(resetFlag.isSet()) break;
                 computeVelocityBarrier.await();
 
                 boid.updateVelocity(model);
-                if(resetFlag.isSet()) break;
                 updateVelocityBarrier.await();
 
                 boid.updatePosition(model);
-                if(resetFlag.isSet()) break;
                 updatePositionBarrier.await();
             }
         }
-        System.out.println("Terminating");
     }
 }

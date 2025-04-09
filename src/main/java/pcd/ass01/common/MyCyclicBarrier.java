@@ -56,7 +56,7 @@ public class MyCyclicBarrier {
     public void breaks(){
         mutex.lock();
         count = 0;
-        //generation++;
+        generation++;
         broken = true;
         cond.signalAll();
         mutex.unlock();

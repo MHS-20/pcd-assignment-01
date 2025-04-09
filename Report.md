@@ -1,6 +1,6 @@
 # Report Assingment 1 - PCD
+Muhamad Huseyn Salman
 
-- MVC con notifies (la gui si blocca sul lock però)
 - RWLock implementation (solo per le performance)
 - PN: i token sono i thread, le piazze sono gli stati
 
@@ -9,7 +9,6 @@
 - pos + 1: ha bisogno di sapere che hanno finito di scrivere per aggiornare la gui
 
 - Join Issue
-- Executor: spammare reset lo rallenta molto, perché?
 
 
 ### Open Design Issue: Workers Join 
@@ -38,61 +37,72 @@ Basterebbe un singolo interrupt per poterli joinare tutti.
 
 Però dovresti sporcare il codice mettendo un if prima di ogni barriera.
 Forse basterebbe una flag iteration started in OR sul ciclo interno.
-Però questa nuova flag non avrebbe gli stessi problemi?
+Però questa nuova flag non avrebbe gli stessi problemi? Dovrei comunque usare un interrupt e controllare nel while della barriera se il thread è stato interrotto. 
+Ma così sei al punto di partenza e fa schifo. C'è qualcosa che non hai capito della soluzione del prof? Lui aveva thread infiniti?
+C'è un modo per farlo senza interrupt? L'unica cosa sarebbe mettere la flag dentro la barriera ma fa schifo.
+
+La soluzione più semplice ma anche più inefficiente sarebbe quella di creare nuovi thread ad ogni iterazione. 
+
+Quando faccio suspend, potrebbe essere che il main sia già dentro al ciclo. Se premo resume i thread mancanti entrano e funziona tutto normale. 
+Però se premo reset ed il main è dentro, rimarrà bloccato sulla barriera perché è lui che dovrebbe stare fuori e resettare le barriere.
+Serve un MasterWorker thread che aspetti sulle barriere, mentre il main si occupa solo del reset.
 
 ## Analisi
-Il problema principale da affrontare era la gestione delle letture e scritture di ogni boid della lista condivisa.
-Infatti ogni boid per aggiornare la propria velocità deve fare riferimento ai boid vicini, di conseguenza deve leggere
-il loro stato. Senza nessun tipo di sincronizzazione, c'è il rischio che un thread/task vada a leggere la velocità di un
-boid vicino mentre un altro thread/task la sta modificando.
-Ogni versione era propensa a tecniche di parallelizzazione diverse, ma la sincronizzazione era simile.
+Per paralellizare il codice, il problema principale da affrontare era la gestione delle letture e scritture di ogni boid da una lista condivisa. 
+Ogni boid per aggiornare la propria velocità ha bisogno di far riferimento ai boid vicini, di conseguenza deve leggerne lo stato. 
+Senza nessun tipo di sincronizzazione, c'è il rischio che un worker vada a leggere la velocità di un boid vicino mentre un altro worker lo sta modificando.
+E' inoltre necessario che i worker si sincronizzino non solo tra di loro ma anche con la view, dandogli il tempo di disegnare i boid prima di poterli aggiornare all'istante di tempo succesivo.
+
 
 ## Design
-In tutte le versioni, per sincronizzare le letture e scritture dei boid, sono state individuate delle fasi separate di
-lettura e scrittura dei boid. Prima di iniziare una nuova fase è necessario che tutti i thread/task abbiano terminato la
-fase precedente.
-Pr ogni boid le fasi sono:
+Ogni versione è propensa a tecniche di parallelizzazione diverse, ma la sincronizzazione è piuttosto simile. E' stata adottata un'architettura MVC in cui lo stato di esecuzione della simulazione è incapsulato dentro a degli oggetti monitor `Flag`. 
+Quando uno dei bottoni viene premuto, la View segnala il cambiamento di stato al Controller tramite dei metodi `notify`, che aggiornano lo stato della Flag corrispondente (ai bottoni di suspend/resume e reset sono state assegnate Flag separate). 
 
+Le Flag vengono usate ad ogni iterazione dai worker per controllare se continuare o meno l'esecuzione, e dal main per controllare se resettare la simulazione.
+Nello specifico, i diversi bottoni hanno questo effetto:
+* `Suspend/Resume`: nello stato suspend i worker non possono iniziare una nuova iterazione, il bottone reset viene abilitato ed il main controlla attivamente se viene premuto.
+* `Reset`: può essere premuto solo quando la simulazione è sospesa; i worker terminano, il main crea una lista di boid aggiornata alla nuova dimensione e crea nuovi worker.
+
+In tutte le versioni, per evitare letture concorrenti a scritture, sono state separate le due operazioni in fasi distinte.
+Prima di iniziare una nuova fase è necessario che tutti i worker abbiano terminato la fase precedente.
+Ad esempio, inizialmente tutti i boid leggono le informazioni necessarie per calcolare la propria velocità, e solo dopo procedono tutti all'aggiornamento del campo.
+
+Per ogni boid le fasi sono:
 1. Lettura e calcolo della velocità
 2. Scrittura della nuova velocità
 3. Calcolo e scrittura della nuova posizione
 4. Lettura ed aggiornamento della GUI
 
-L'aggiornamento della GUI avviene solo in una fase in cui i boid non vengono modificati. Per questo motivo ho usato il
-metodo SwingUtils.invokeAndWait() per aggiornare la GUI in modo sincrono, onde evitare che i thread/task possano
+L'aggiornamento della GUI avviene solo in una fase in cui i boid non vengono modificati. Per questo motivo è stato utilizzato il
+metodo `SwingUtils.invokeAndWait()` dal main per aggiornare la GUI in modo sincrono, onde evitare che i worker possano
 modificare i boid mentre la GUI li sta ancora leggendo.
-
-Lo stato di esecuzione della simulazione è incapsulato dentro al controller tramite un oggetto monitor `Flag`. Quando
-dei bottoni vengono premuti, la view invoca dei metodi `notify` sul controller per notificare l'evento, di conseguenza
-il controllr modifico lo stato della Flag.
-La Fla viene usate dai worker ad ogni frame per controllare se continuare o meno l'esecuzione. Nello specifico, i
-diversi bottoni hanno questo effetto:
-
-* `Suspend/Resume`: modificano la flag, i worker non possono iniziare una nuova iterazione finché il bottone non viene
-  premuto nuovamente.
-* `Reset`: quando viene premuto, i worker terminano ed il main ne crea di nuovi, con una nuova lista di boid aggiornata
-  alla nuova dimensione. Il tasto reset può essere premuto solo mentre la simulazione è ferma.
 <br/><br/>
 
-### Reti di Petri 
+### Comportamento
+Le seguenti Reti di Petri rappresentano il comportamento del sistema a diversi livelli di astrazione.
 Le piazze rappresentano gli stati che attraversano i worker, mentre i token rappresentano i worker.
-Queste reti prendono in considerazione il caso di 3 worker ed il main (4 token totali).
+Queste reti prendono in considerazione il caso di 3 worker ed il main, quindi con 4 token totali.
 
-<div style="text-align: center;">
-<img src="PetriNets/pn1.png" alt="PN1" width="400"/>
+#### Rete 1
+Questa prima rete descrive il comportamento iterativo generale del sistema, quindi i vari stati che attraversa durante una normale iterazione, i punti di sincronizzazione (barriere) ed il controllo sulle due flag prima di iniziare una nuova iterazione.
+<img src="PetriNets/pn1.png" alt="PN1" width="400" style="text-align: center;"/>
+<br/>
+
+#### Rete 2
+La seconda rete rappresenta la sezione critica interna alla Barriera.
+<br/>
+<img src="PetriNets/PN2.png" alt="PN2" width="400" style="text-align: center;"/>
 <br/><br/>
 
-<img src="PetriNets/PN2.png" alt="PN2" width="400"/>
-<br/>
-<br/>
-<img src="PetriNets/PN3.png" alt="PN3" width="400"/>
-</div>
+
+#### Rete 3 
+La terza rete rappresenta il funzionamento interna alla Flag, che alterna tra letture parallele e scritture sequenziali.
+<img src="PetriNets/PN3.png" alt="PN3" width="400" style="text-align: center;"/>
 
 
 
 ## Versione 1: Platform Threads
-
-In questa versione sono stati creati `N` thread (N = numero di core disponibili), ognuno dei quali si occupa di un
+In questa versione sono stati creati `N` thread (N = numero di Core disponibili), ognuno dei quali si occupa di un
 sottoinsieme di boid.
 Sono state usate diverse barriere cicliche per mantenere i thread sincronizzati nelle varie fasi di calcolo/lettura e
 scrittura dei boid.
@@ -105,7 +115,6 @@ Le barriere utilizzato sono:
 1. Barriera per il calcolo della velocità
 2. Barriera per l'aggiornamento della velocità
 3. Barriere per l'aggiornamento della posizione
-4. Barriera per l'aggiornamento della GUI
 
 I thread vengono ricreati solo alla pressione del tasto reset, quando viene premuto il tast suspend i thread non possono
 eseguire nuove iterazioni a causa della Flag.
@@ -162,7 +171,6 @@ Le barriere utilizzato sono:
 1. Barriera per il calcolo della velocità
 2. Barriera per l'aggiornamento della velocità
 3. Barriere per l'aggiornamento della posizione
-4. Barriera per l'aggiornamento della GUI
 
 I thread vengono ricreati solo alla pressione del tasto reset, quando viene premuto il tast suspend i thread non possono
 eseguire nuove iterazioni a causa della Flag.

@@ -1,6 +1,7 @@
 package pcd.ass01.v3;
 
 import pcd.ass01.common.*;
+import pcd.ass01.v1.BoidWorker;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +19,7 @@ public class BoidsSimulator implements BoidsController {
     private final int N_WORKERS = CORES;
     private long t0;
     private Flag runFlag, resetFlag;
+    private MasterWorker master;
 
     private volatile MyCyclicBarrier computeVelocityBarrier;
     private volatile MyCyclicBarrier updateVelocityBarrier;
@@ -37,6 +39,16 @@ public class BoidsSimulator implements BoidsController {
         computeVelocityBarrier = new MyCyclicBarrier(boids.size() + 1, "velocity1");
         updateVelocityBarrier = new MyCyclicBarrier(boids.size(), "velocity2");
         updatePositionBarrier = new MyCyclicBarrier(boids.size() + 1, "position");
+        master = new MasterWorker(
+                model,
+                view.get(),
+                this,
+                computeVelocityBarrier,
+                updatePositionBarrier,
+                runFlag,
+                resetFlag,
+                FRAMERATE
+        );
 
         boids.forEach(boid -> {
             Thread t = Thread.ofVirtual().unstarted(new VirtualBoidWorker(boid,
@@ -54,6 +66,7 @@ public class BoidsSimulator implements BoidsController {
     }
 
     private void startWorkers() {
+        master.start();
         workers.forEach(Thread::start);
     }
 
@@ -73,15 +86,22 @@ public class BoidsSimulator implements BoidsController {
 
     private void runSimulationWithView(BoidsView view) {
         while (true) {
-            if (runFlag.isSet()) {
-                t0 = System.currentTimeMillis();
-                computeVelocityBarrier.await();
-                updatePositionBarrier.await();
-                view.update(framerate, new ArrayList<>(model.getBoids()));
-                updateFrameRate(t0);
-            }
+//            if (runFlag.isSet()) {
+//                System.out.println("Running");
+//                t0 = System.currentTimeMillis();
+//                computeVelocityBarrier.await();
+//                updatePositionBarrier.await();
+//                System.out.println("Waited");
+//                view.update(framerate, new ArrayList<>(model.getBoids()));
+//                updateFrameRate(t0);
+//            } else
+//                System.out.println("Stopped");
+
+            System.out.println("Alive");
 
             if (resetFlag.isSet()) {
+                System.out.println("Resetting");
+                terminateWorkers();
                 model.resetBoids(view.getNumberOfBoids());
                 view.update(framerate, new ArrayList<>(model.getBoids()));
                 notifyResetUnpressed();
@@ -95,6 +115,31 @@ public class BoidsSimulator implements BoidsController {
             System.out.println("[" + this + "] " + Thread.currentThread().getName() + " -> Running");
             computeVelocityBarrier.await();
             updatePositionBarrier.await();
+        }
+    }
+
+    private void terminateWorkers() {
+        // awakes suspended threads
+        System.out.println("Terminating workers");
+        computeVelocityBarrier.breaks();
+        updateVelocityBarrier.breaks();
+        updatePositionBarrier.breaks();
+
+//        for (Thread w : workers){
+//            if(w.isAlive()){
+//                System.out.println(w.getState());
+//                computeVelocityBarrier.breaks();
+//            }
+//        }
+
+        try {
+            //checks all threads have terminated
+            for (Thread w : workers) {
+                //System.out.println("Joining: " + w);
+                w.join();
+            }
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -114,7 +159,7 @@ public class BoidsSimulator implements BoidsController {
         resetFlag.reset();
     }
 
-    private void updateFrameRate(long t0) {
+    public void updateFrameRate(long t0) {
         var t1 = System.currentTimeMillis();
         var dtElapsed = t1 - t0;
         var frameratePeriod = 1000 / FRAMERATE;

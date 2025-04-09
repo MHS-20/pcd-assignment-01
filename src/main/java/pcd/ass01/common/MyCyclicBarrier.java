@@ -10,6 +10,7 @@ public class MyCyclicBarrier {
     private ReentrantLock mutex;
     private Condition cond;
     private String name;
+    private volatile boolean broken = false;
 
     public MyCyclicBarrier(int parties) {
         this.parties = parties;
@@ -34,20 +35,39 @@ public class MyCyclicBarrier {
         var currentGeneration = generation;
         count++;
         if (count != parties) {
-            while (currentGeneration == generation) {
+            while (currentGeneration == generation && !broken) {
                 try {
                     //System.out.println("Thread " + Thread.currentThread() + " is waiting on barrier " + name + " with count: " + count);
                     cond.await();
                 } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
+                   throw new RuntimeException(e);
                 }
             }
         } else {
             //System.out.println("Thread " + Thread.currentThread() + " is releasing barrier " + name);
             count = 0;
             generation++;
+            broken = false;
             cond.signalAll();
         }
+        mutex.unlock();
+    }
+
+    public void breaks(){
+        mutex.lock();
+        count = 0;
+        //generation++;
+        broken = true;
+        cond.signalAll();
+        mutex.unlock();
+    }
+
+    public void resets() {
+        mutex.lock();
+        count = 0;
+        generation = 0;
+        broken = false;
+        cond.signalAll();
         mutex.unlock();
     }
 }

@@ -95,25 +95,11 @@ public class BoidsSimulator implements BoidsController {
             }
 
             if (resetFlag.isSet()) {
+                terminateWorkers();
                 model.resetBoids(view.getNumberOfBoids());
                 view.update(framerate, new ArrayList<>(model.getBoids()));
                 notifyResetUnpressed();
                 initWorkers();
-            }
-        }
-    }
-
-    private void joinWorkers() {
-        while (!boidWorkers.isEmpty()) {
-            for (int i = 0; i < boidWorkers.size(); i++) {
-                var w = boidWorkers.get(i);
-                if (w.isAlive()) {
-                    System.out.println("Interrupting: " + w);
-                    w.interrupt();
-                } else {
-                    System.out.println("Removing: " + w);
-                    boidWorkers.remove(w);
-                }
             }
         }
     }
@@ -123,6 +109,29 @@ public class BoidsSimulator implements BoidsController {
             System.out.println("[" + this + "] " + Thread.currentThread().getName() + " -> Running");
             computeVelocityBarrier.await();
             updatePositionBarrier.await();
+        }
+    }
+
+    private void terminateWorkers() {
+        // awakes suspended threads
+        computeVelocityBarrier.breaks();
+        updateVelocityBarrier.breaks();
+        updatePositionBarrier.breaks();
+
+        for (BoidWorker w : boidWorkers) {
+            if (w.isAlive()) {
+                computeVelocityBarrier.breaks();
+                updateVelocityBarrier.breaks();
+                updatePositionBarrier.breaks();
+            }
+        }
+
+        try {
+            //checks all threads have terminated
+            for (BoidWorker w : boidWorkers)
+                w.join();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
     }
 

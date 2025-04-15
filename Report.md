@@ -86,6 +86,7 @@ this version a virtual thread has been created for each boid, which takes care o
 The synchronization and the behavior of the system at the press of a button are analogous to the case of  physical threads.
 <br/>
 
+
 ### 2.4 Monitor Implementations
 As requested, the synchronization mechanisms used has been implemented from scratch, using only `Lock` and `Conditions`.
 
@@ -97,6 +98,7 @@ A writing can only occur when there are no readings in progress,
 otherwise a writing request is signaled that prevents new
 readers from entering the critical section, thus avoiding the starvation of the writer. This class is used internally by the Flag monitor class.
 <br/>
+
 
 ### 2.5 Thread Join Issue
 In version 1 and 3, a problem was found in the termination of threads. Unlike Tasks in the case of Executors, which terminate at each
@@ -117,8 +119,8 @@ barrier implementation that allows the main to break the barrier
 on command and wake up all the waiting threads. Once woken up, the threads
 overcome all the barriers because they are already broken and notice that the simulation
 is paused (`runFlag = false`) and that the reset button has been pressed, so they terminate.
-
 <br/>
+
 ## 3. Behaviour
 The following Petri Nets represent the behavior of the system at different levels of abstraction. 
 The places represent the states that the workers go through, while the tokens represent the workers. 
@@ -130,7 +132,7 @@ therefore the various states it passes through during a normal iteration, includ
 the synchronization points (barriers) and the control on the two flags before starting a new iteration.
 <br/>
 <div style="text-align: center;">
-<img src="PetriNets/pn1.png" alt="PN1" width="650"/></div>
+<img src="PetriNets/pn1.png" alt="PN1" width="650" align="center"/></div>
 <br/>
 
 The system behavior is very similar also in the version based on Executors and Tasks.

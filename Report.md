@@ -1,5 +1,5 @@
-# Report Assingment 1
-Concurrent and Distributed Progamming <br/>
+# Report Assignment 1
+Concurrent and Distributed Programming <br/>
 _Muhamad Huseyn Salman_
 
 ## 1. Analysis
@@ -32,13 +32,14 @@ workers, while main creates a list of boids updated to the new size for new work
 In all versions, to avoid concurrent readings and writings, the two operations have been separated into distinct phases. 
 Before starting a new phase, all workers must have completed the previous phase. 
 For example, initially all boids read the information needed to calculate their own speed, and only then do they all proceed to update the field
+
 For each boid the phases are:
 1. Reading and calculating the velocity
 2. Writing the new velocity
 3. Calculating and writing the new position
 4. Reading and updating the GUI
-The GUI update only happens at a stage where the boids are not being modified, so the `SwingUtils.invokeAndWait()` method from main was used to update the GUI synchronously, to avoid that workers can modify the boids while the GUI is still drawing them.
 
+The GUI update only happens at a stage where the boids are not being modified, so the `SwingUtils.invokeAndWait()` method from main was used to update the GUI synchronously, to avoid that workers can modify the boids while the GUI is still drawing them.
 <br/>
 
 ### 2.3 Versions Details
@@ -48,10 +49,11 @@ The differences between the individual versions are highlighted below, consideri
 threads have been created (N = number of available cores), each of which deals with a
 subset of boids. Different cyclic barriers have been used to keep
 the threads synchronized in the various phases of calculation/reading and writing of the boids.
+
 The barriers used are:
 1. Barrier for calculating the speed (`counter = N+1`)
 2. Barrier for updating the speed (`counter = N`)
-3. Barrier for updating the speed (`counter = N+1`)
+3. Barrier for updating the position (`counter = N+1`)
 
 To break the first and last barriers, the main must also wait,
 in addition to the N workers. This is because the main is responsible for updating the graphics, so by breaking the third barrier it knows it can update the GUI since the threads have finished writing the updated positions.
@@ -74,6 +76,7 @@ an `ExecutorService` of type `FixedThreadPool`. The completion of each
 task is waited for on the corresponding Future object and when all the
 tasks of a phase are finished, you can move on to the next phase. Once the
 phases are finished, the GUI is updated and the cycle is repeated
+
 Types of Tasks created:
 1. Task for calculating the velocity
 2. Task for updating the velocity
@@ -93,7 +96,9 @@ The synchronization and the behavior of the system at the press of a button are 
 As requested, the synchronization mechanisms used has been implemented from scratch, using only `Lock` and `Conditions`.
 
 `MyCyclicBarrier`: using a lock a critical section has been built
-in the await method that blocks the thread in case the number of threads already waiting is not enough to break the barrier. The thread that breaks the barrier first resets it and then wakes up all the threads waiting. The condition on the while uses a generation variable and not the counter, otherwise there would be the risk that a thread checks the condition on the counter when it has already been reset.
+in the await method that blocks the thread in case the number of threads already waiting is not enough to break the barrier. 
+The thread that breaks the barrier first resets it and then wakes up all the threads waiting. 
+The condition on the while uses a `generation` variable and not the `counter`, otherwise there would be the risk that a thread checks the condition on the counter when it has already been reset.
 
 `MyReadWriteLock`: allows parallel readings but serializes writings.
 A writing can only occur when there are no readings in progress,
@@ -166,13 +171,13 @@ and compared with the linear speedup. We can see that the speedup
 detaches from the linear one as the number of threads increased, probably due
 to the synchronization mechanisms.
 <br/>
-<div style="text-align: center;"><img src="SpeedUp.png" alt="SpeedUp" width="500"/></div>
+<div style="text-align: center;"><img src="PetriNets/SpeedUp.png" alt="SpeedUp" width="500"/></div>
 
 <br/><br/>
 ### 4.1 Throughput
 For each version, the throughput was calculated, meaning the number of boids updated in a certain period of time.
 <br/>
-<div style="text-align: center;"><img src="Throughput.png" alt="Throughput" width="500"/></div>
+<div style="text-align: center;"><img src="PetriNets/Throughput.png" alt="Throughput" width="500"/></div>
 
 In general, as the number of boids increases, the throughput decreases in all versions,
 probably due to the synchronization mechanisms and the

@@ -8,6 +8,7 @@ Each boid to update its speed needs to refer to neighboring boids, consequently 
 there is the risk that a worker goes to read the speed of a neighboring boid while another worker is modifying it.
 It is also necessary that the workers synchronize not only with each other but also with the View, giving it time to draw the boids before being able to
 update them at the next instant of time.
+
 <br/>
 
 ## 2. Design
@@ -22,9 +23,9 @@ continue execution or not, and by main to control whether to reset the
 simulation. Specifically, the different buttons have this effect:
 * `Suspend/Resume`: in the suspend state workers cannot start a  new iteration, the reset button is enabled and main actively checks
 if it is pressed. 
-* `Reset`: can be pressed only when the simulation is suspended and terminates
-workers, while main creates a list of boids updated to
-the new size for new workers
+* `Reset`: can be pressed only when the simulation is suspended and terminates  
+workers, while main creates a list of boids updated to the new size for new workers
+
 <br/>
 
 ### 2.2 Concurrency Management
@@ -37,6 +38,7 @@ For each boid the phases are:
 3. Calculating and writing the new position
 4. Reading and updating the GUI
 The GUI update only happens at a stage where the boids are not being modified, so the `SwingUtils.invokeAndWait()` method from main was used to update the GUI synchronously, to avoid that workers can modify the boids while the GUI is still drawing them.
+
 <br/>
 
 ### 2.3 Versions Details
@@ -84,8 +86,8 @@ of the boid list.
 **Version 3: Virtual Threads** Since virtual threads are very lightweight and allow us to overcome the limit of physical threads of the system, in
 this version a virtual thread has been created for each boid, which takes care of the corresponding calculations and updates. 
 The synchronization and the behavior of the system at the press of a button are analogous to the case of  physical threads.
-<br/>
 
+<br/>
 
 ### 2.4 Monitor Implementations
 As requested, the synchronization mechanisms used has been implemented from scratch, using only `Lock` and `Conditions`.
@@ -97,8 +99,8 @@ in the await method that blocks the thread in case the number of threads already
 A writing can only occur when there are no readings in progress,
 otherwise a writing request is signaled that prevents new
 readers from entering the critical section, thus avoiding the starvation of the writer. This class is used internally by the Flag monitor class.
-<br/>
 
+<br/>
 
 ### 2.5 Thread Join Issue
 In version 1 and 3, a problem was found in the termination of threads. Unlike Tasks in the case of Executors, which terminate at each
@@ -119,6 +121,7 @@ barrier implementation that allows the main to break the barrier
 on command and wake up all the waiting threads. Once woken up, the threads
 overcome all the barriers because they are already broken and notice that the simulation
 is paused (`runFlag = false`) and that the reset button has been pressed, so they terminate.
+
 <br/>
 
 ## 3. Behaviour
@@ -132,7 +135,8 @@ therefore the various states it passes through during a normal iteration, includ
 the synchronization points (barriers) and the control on the two flags before starting a new iteration.
 <br/>
 <div style="text-align: center;">
-<img src="PetriNets/pn1.png" alt="PN1" width="650" align="center"/></div>
+<img src="PetriNets/pn1.png" alt="PN1" width="650" align="center"/>
+</div>
 <br/>
 
 The system behavior is very similar also in the version based on Executors and Tasks.

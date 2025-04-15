@@ -134,9 +134,7 @@ This first network describes the general iterative behavior of the system,
 therefore the various states it passes through during a normal iteration, including
 the synchronization points (barriers) and the control on the two flags before starting a new iteration.
 <br/>
-<div style="text-align: center;">
-<img src="PetriNets/pn1.png" alt="PN1" width="650" align="center"/>
-</div>
+<img src="PetriNets/pn1.png" alt="PN1" width="650" align="center" style="text-align: center;"/>
 <br/>
 
 The system behavior is very similar also in the version based on Executors and Tasks.
